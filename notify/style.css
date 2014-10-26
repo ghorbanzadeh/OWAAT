@@ -1,0 +1,21 @@
+html, body { margin:0; padding:0; font:12px Helvetica, Arial, sans-serif }
+#content { padding:10px 30px; }
+a { color:#477099; text-decoration:none }
+a:hover { text-decoration:underline }
+
+#bar { background:#252823; padding:5px 10px; border-bottom:4px solid #C3D3DA }
+#bar h1 { margin:0; padding:0; color:#fff; font-size:40px; letter-spacing:-1px; text-shadow:0 0 4px #000000 }
+#bar h1 span { color:#C3D3DA }
+#bar div { float:right; margin-top:-50px; padding:20px 20px 0 0 }
+#bar a { color:#fff }
+
+.message { padding:10px; margin:15px 0; display:block; text-align:left; }
+.message-title { font-weight:bold; font-size:1.25em; }
+.message-body { margin-top:4px; }
+.error, .notice, .success {padding:.8em;margin-bottom:1em;border:2px solid #ddd;}
+.error {background:#FBE3E4;color:#8a1f11;border-color:#FBC2C4;}
+.notice {background:#FFF6BF;color:#514721;border-color:#FFD324;}
+.success {background:#E6EFC2;color:#264409;border-color:#C6D880;}
+.error a {color:#8a1f11;}
+.notice a {color:#514721;}
+.success a {color:#264409;}
