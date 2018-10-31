@@ -23,14 +23,14 @@
 	include 'function.php';
 
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 	
 	header('Content-Type: text/html; charset=utf-8');
   
 	include 'db.php';
 
   	if(!isset($_GET['assessment_id']) || !isset($_GET['user_id']))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	$assessment_id = (int) $_GET['assessment_id'];
 	$user_id = (int) $_GET['user_id'];
@@ -40,24 +40,24 @@
 	if(isset($_GET['admin_comment']))
 	{
 		if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-			error($PN.'12');
+			error($PN.'12', $con);
 
 		$admin_comment_tmp = strip_tags($_GET['admin_comment']);
-		$admin_comment = mysql_real_escape_string($admin_comment_tmp);
+		$admin_comment = mysqli_real_escape_string($con, $admin_comment_tmp);
 		$admin_comment = trim($admin_comment);
 
-		mysql_query("UPDATE assignment SET admin_comment='".$admin_comment."' WHERE assessment_id = ".$assessment_id." AND user_id = ".$user_id.";") or error($PN.'13');
+		mysqli_query($con, "UPDATE assignment SET admin_comment='".$admin_comment."' WHERE assessment_id = ".$assessment_id." AND user_id = ".$user_id.";") or error($PN.'13', $con);
 	}
 
-	$result = mysql_query("SELECT id, admin_comment FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id = ".$user_id.";") or error($PN.'14');
+	$result = mysqli_query($con, "SELECT id, admin_comment FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id = ".$user_id.";") or error($PN.'14', $con);
 
-	$row = mysql_fetch_array($result);
+	$row = mysqli_fetch_array($result);
 
 	$response['Result'] = 'OK';
 	$response['Record'] = $row;
 
 	echo json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 
 ?>

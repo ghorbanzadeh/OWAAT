@@ -23,14 +23,14 @@
 
 	include 'function.php';
 	if(!isset($_SESSION['user']))
-		error($PN.'10');
+		error($PN.'10', $con);
 
 	header('Content-Type: text/html; charset=utf-8');
 
 	include 'db.php';
 
 	if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-		error($PN.'11');
+		error($PN.'11', $con);
 
 
 	if(isset($_POST['id']) && isset($_GET["assignment_id"]))
@@ -39,17 +39,17 @@
 		$assignment_id = (int)$_GET['assignment_id'];		
 	}
 	else
-		error($PN.'12');
+		error($PN.'12', $con);
 
-	$result = mysql_query("SELECT id FROM report_rules WHERE assignment_id = ".$assignment_id." AND rule_id = ".$rule_id.";") or error($PN.'13');
-	if(mysql_fetch_array($result))
-		error($PN.'14');
+	$result = mysqli_query($con, "SELECT id FROM report_rules WHERE assignment_id = ".$assignment_id." AND rule_id = ".$rule_id.";") or error($PN.'13', $con);
+	if(mysqli_fetch_array($result))
+		error($PN.'14', $con);
 
-	mysql_query("DELETE FROM assessment_rules WHERE assignment_id = ".$assignment_id." AND rule_id = ".$rule_id.";") or error($PN.'15');
+	mysqli_query($con, "DELETE FROM assessment_rules WHERE assignment_id = ".$assignment_id." AND rule_id = ".$rule_id.";") or error($PN.'15', $con);
 
 	$response = array();
 	$response['Result'] = "OK";
 	print json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>

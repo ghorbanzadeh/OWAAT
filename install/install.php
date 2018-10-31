@@ -31,12 +31,12 @@
 \$sc = '".$sc."'; //Security Code.
 \$time = '".$time."';//It is valid for 10 minutes.
 ?>");
-		error($PN.'10');
+		error($PN.'10', $con);
 	}
 
 
 	if(!isset($_POST['sc']) || ($_POST['sc'] != $sc))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	$response = array();
 
@@ -52,15 +52,15 @@
 		$databaseName = $_POST['db'];//Database Name
 
 		if(empty($host) || empty($user) || empty($databaseName))
-			error($PN.'12');
+			error($PN.'12', $con);
 
-		$con = mysql_connect($host,$user,$pass);
+		$con = mysqli_connect($host,$user,$pass,$databaseName);
 		if(!$con)
 			error($PN.'23');
 
-		mysql_query("CREATE DATABASE ".$databaseName);
+		mysqli_query($con, "CREATE DATABASE IF NOT EXISTS ".$databaseName);
 
-		@mysql_close($con);	
+		@mysqli_close($con);
 
 		try
 		{
@@ -76,7 +76,7 @@
 		}
 		catch(PDOException $ex)
 		{
-			error($PN.'24');
+			error($PN.'24', $con);
 		}
 		
 		if($response['Result'] == "OK")
@@ -91,8 +91,7 @@
 
 \$databaseName = '".$databaseName."';
 
-\$con = mysql_connect(\$host,\$user,\$pass);
-\$dbs = mysql_select_db(\$databaseName, \$con) or error(\$PN.'10');
+\$con = mysqli_connect(\$host,\$user,\$pass,\$databaseName) or error(\$PN.'10');
 
 ?>");
 
@@ -105,7 +104,7 @@
 		$logo = $_POST['logo'];//Logo
 
 		if(empty($organization_name) || empty($organization_address) || empty($logo))
-			error($PN.'12');
+			error($PN.'12', $con);
 
 		//Write to The db.php File
 		file_put_contents("../certificate/config.php","<?php
@@ -125,57 +124,57 @@
 		if(isset($_POST["fname"]) && isset($_POST["lname"]) && isset($_POST["email"]) && isset($_POST["password"]) && isset($_POST["uname"]))
 		{
 			$fname_tmp = strip_tags($_POST['fname']);
-			$fname = mysql_real_escape_string($fname_tmp);
+			$fname = mysqli_real_escape_string($con, $fname_tmp);
 			$fname = trim($fname);
 
 			$lname_tmp = strip_tags($_POST['lname']);
-			$lname = mysql_real_escape_string($lname_tmp);
+			$lname = mysqli_real_escape_string($con, $lname_tmp);
 			$lname = trim($lname);
 
 			$email_tmp = strip_tags($_POST['email']);
-			$email = mysql_real_escape_string($email_tmp);
+			$email = mysqli_real_escape_string($con, $email_tmp);
 			$email = trim($email);
 	
 			$password_tmp = strip_tags($_POST['password']);
-			$password = mysql_real_escape_string($password_tmp);
+			$password = mysqli_real_escape_string($con, $password_tmp);
 			$password = trim($password);
 			
 			$uname_tmp = strip_tags($_POST['uname']);
-			$uname = mysql_real_escape_string($uname_tmp);
+			$uname = mysqli_real_escape_string($con, $uname_tmp);
 			$uname = trim($uname);
 
 			if(empty($fname) || empty($lname) || empty($email) || empty($password) || empty($uname))
-				error($PN.'13');
+				error($PN.'13', $con);
 				
 			if (!preg_match("/([\w\-]+\@[\w\-]+\.[\w\-]+)/", $email))
-				error($PN.'14');
+				error($PN.'14', $con);
 				
 			if(strlen($password) < 6)
-				error($PN.'15');
+				error($PN.'15', $con);
 		}
 		else
-			error($PN.'16');
+			error($PN.'16', $con);
 			
-		$result_exists = mysql_query("SELECT uname FROM users WHERE uname = '".$uname."' and id != 1;") or error($PN.'17');
-		$row_exists = mysql_fetch_array($result_exists);
+		$result_exists = mysqli_query($con, "SELECT uname FROM users WHERE uname = '".$uname."' and id != 1;") or error($PN.'17', $con);
+		$row_exists = mysqli_fetch_array($result_exists);
 
 		if($row_exists)
-			error($PN.'18');
+			error($PN.'18', $con);
 
-		$result1 = mysql_query("SELECT * FROM users where id = 1") or error($PN.'19');
-		$row1 = mysql_fetch_array($result1);
+		$result1 = mysqli_query($con, "SELECT * FROM users where id = 1") or error($PN.'19', $con);
+		$row1 = mysqli_fetch_array($result1);
 
 		if($row1)
 		{
-			mysql_query("UPDATE users SET fname='".$fname."', lname='".$lname."', email='".$email."', uname='".$uname."', password='".sha1($password)."', administrator=1, enabled=1 WHERE id = 1;") or error($PN.'20');
+			mysqli_query($con, "UPDATE users SET fname='".$fname."', lname='".$lname."', email='".$email."', uname='".$uname."', password='".sha1($password)."', administrator=1, enabled=1 WHERE id = 1;") or error($PN.'20', $con);
 		}
 		else
 		{
-			mysql_query("INSERT INTO users(id, fname, lname, email, uname, password, administrator, enabled) VALUES(1,'".$fname."','".$lname."','".$email."','".$uname."','".sha1($password) ."',1,1)") or error($PN.'21');
+			mysqli_query($con, "INSERT INTO users(id, fname, lname, email, uname, password, administrator, enabled) VALUES(1,'".$fname."','".$lname."','".$email."','".$uname."','".sha1($password) ."',1,1)") or error($PN.'21', $con);
 		}
 
 		$response['Result'] = "OK";
-		@mysql_close();
+		@mysqli_close($con);
 
 	}
 	else if($_GET['action'] == "delete")//Delete Installation Directory
@@ -188,7 +187,7 @@
 		}
 	}
 	else
-		error($PN.'22');
+		error($PN.'22', $con);
 
 	function delete_installation_directory($dir)
 	{

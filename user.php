@@ -23,76 +23,76 @@
 
 	include 'function.php';
     if(!isset($_SESSION['admin']))
-      error($PN.'10');
+      error($PN.'10', $con);
 	
     header('Content-Type: text/html; charset=utf-8');
 	
 	include 'db.php';
 	
 	if(!isset($_GET["action"]))
-	  error($PN.'11');
+	  error($PN.'11', $con);
 
 	if($_GET["action"] != "list")
 		if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-			error($PN.'12');
+			error($PN.'12', $con);
 
 	if(($_GET["action"] == "create") || (($_GET["action"] == "update") && (!isset($_POST['password']))))
 	{
 		if(isset($_POST["fname"]) && isset($_POST["lname"]) && isset($_POST["email"]))
 		{
 			$fname_tmp = strip_tags($_POST['fname']);
-			$fname = mysql_real_escape_string($fname_tmp);
+			$fname = mysqli_real_escape_string($con, $fname_tmp);
 			$fname = trim($fname);
 			$fname = mb_convert_encoding($fname, 'UTF-8');
 
 			$lname_tmp = strip_tags($_POST['lname']);
-			$lname = mysql_real_escape_string($lname_tmp);
+			$lname = mysqli_real_escape_string($con, $lname_tmp);
 			$lname = trim($lname);
 			$lname = mb_convert_encoding($lname, 'UTF-8');
 
 			$email_tmp = strip_tags($_POST['email']);
-			$email = mysql_real_escape_string($email_tmp);
+			$email = mysqli_real_escape_string($con, $email_tmp);
 			$email = trim($email);
 			$email = mb_convert_encoding($email, 'UTF-8');
 
 			if(empty($fname) || empty($lname) || empty($email))
-				error($PN.'13');
+				error($PN.'13', $con);
 				
 			if (!preg_match("/([\w\-]+\@[\w\-]+\.[\w\-]+)/", $email))
-				error($PN.'41');
+				error($PN.'41', $con);
 		}
 		else
-			error($PN.'14');
+			error($PN.'14', $con);
 		
 		if($_GET["action"] == "create")
 		{
 			if(isset($_POST["uname"]) && isset($_POST["password"]))
 			{
 				$uname_tmp = strip_tags($_POST['uname']);
-				$uname = mysql_real_escape_string($uname_tmp);
+				$uname = mysqli_real_escape_string($con, $uname_tmp);
 				$uname = trim($uname);
 
 				$uname = strtolower($uname);
 
 				$uname = mb_convert_encoding($uname, 'UTF-8');
 				if (!preg_match("/^[a-z0-9_-]{3,30}$/", $uname))
-					error($PN.'42');
+					error($PN.'42', $con);
 
 				$password_tmp = strip_tags($_POST['password']);
-				$password = mysql_real_escape_string($password_tmp);
+				$password = mysqli_real_escape_string($con, $password_tmp);
 				$password = trim($password);
 
 				if(empty($uname) && empty($password))
-					error($PN.'15');
+					error($PN.'15', $con);
 					
 				if(strlen($password) < 6)
-					error($PN.'16');
+					error($PN.'16', $con);
 		
 				if($password != @$_POST['password2'])
-					error($PN.'17');
+					error($PN.'17', $con);
 			}
 			else
-				error($PN.'18');
+				error($PN.'18', $con);
 		}
 
 		if(isset($_POST["administrator"]))
@@ -109,14 +109,14 @@
 	if($_GET["action"] == "update" && isset($_POST['password']))
 	{
 		$password_tmp = strip_tags($_POST['password']);
-		$password = mysql_real_escape_string($password_tmp);
+		$password = mysqli_real_escape_string($con, $password_tmp);
 		$password = trim($password);
 
 		if(strlen($password) < 6)
-			error($PN.'19');
+			error($PN.'19', $con);
 		
 		if($password != @$_POST['password2'])
-			error($PN.'20');
+			error($PN.'20', $con);
 	}
 	
 	
@@ -127,7 +127,7 @@
 		$id = (int)$_POST['id'];
       }
 	  else
-	    error($PN.'21');
+	    error($PN.'21', $con);
     }
 	
 	if($_GET["action"] == "list")
@@ -147,7 +147,7 @@
 					$sort .= ', ';
 
 				if(!isset($Sorting_array[0]) || !isset($Sorting_array[1]))
-					error($PN.'22');
+					error($PN.'22', $con);
 
 				switch ($Sorting_array[0]) {
 					case "uname":
@@ -169,7 +169,7 @@
 						$sort .= 'enabled';
 						break;
 					default:
-						error($PN.'23');
+						error($PN.'23', $con);
 				}
 					
 				if($Sorting_array[1] == 'ASC')
@@ -185,7 +185,7 @@
 			$PageSize = (int)$_GET['jtPageSize'];
 		}
 		else
-			error($PN.'24');
+			error($PN.'24', $con);
 			
 	    if(isset($_GET["select"]))
 		  $select = (int)$_GET['select'];
@@ -196,13 +196,13 @@
 
 		if($select == 0)
 		{
-			$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM users;") or error($PN.'25');
-			$row = mysql_fetch_array($result);
+			$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM users;") or error($PN.'25', $con);
+			$row = mysqli_fetch_array($result);
 			$recordCount = $row['RecordCount'];
 
-			$result = mysql_query("SELECT id, fname, lname, email, uname, administrator, enabled FROM users ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'26');
+			$result = mysqli_query($con, "SELECT id, fname, lname, email, uname, administrator, enabled FROM users ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'26', $con);
 
-			while($row = mysql_fetch_array($result))
+			while($row = mysqli_fetch_array($result))
 			{
 				$rows[] = $row;
 			}
@@ -211,9 +211,9 @@
 		{
 			$recordCount = 0;
 
-			$result = mysql_query("SELECT id, fname, lname, email, uname, administrator, enabled FROM users where id=".$select.";") or error($PN.'27');
+			$result = mysqli_query($con, "SELECT id, fname, lname, email, uname, administrator, enabled FROM users where id=".$select.";") or error($PN.'27', $con);
 
-			if($row = mysql_fetch_array($result))
+			if($row = mysqli_fetch_array($result))
 			{
 				$recordCount = 1;
 				$rows[] = $row;
@@ -230,16 +230,16 @@
 	else if($_GET["action"] == "create")
 	{
 	
-		$result1 = mysql_query("SELECT uname FROM users WHERE uname = '".$uname."';") or error($PN.'28');
-		$row1 = mysql_fetch_array($result1);
+		$result1 = mysqli_query($con, "SELECT uname FROM users WHERE uname = '".$uname."';") or error($PN.'28', $con);
+		$row1 = mysqli_fetch_array($result1);
 		
 		if($row1)
-		  error($PN.'29');
+		  error($PN.'29', $con);
 		
-		mysql_query("INSERT INTO users(fname, lname, email, uname, password, administrator, enabled) VALUES('".$fname."','".$lname."','".$email."','".$uname."','".sha1($password) ."',".$administrator.",".$enabled.")") or error($PN.'30');
+		mysqli_query($con, "INSERT INTO users(fname, lname, email, uname, password, administrator, enabled) VALUES('".$fname."','".$lname."','".$email."','".$uname."','".sha1($password) ."',".$administrator.",".$enabled.")") or error($PN.'30', $con);
 
-		$result = mysql_query("SELECT id, fname, lname, email, uname, administrator, enabled FROM users WHERE id = LAST_INSERT_ID();") or error($PN.'31');
-		$row = mysql_fetch_array($result);
+		$result = mysqli_query($con, "SELECT id, fname, lname, email, uname, administrator, enabled FROM users WHERE id = LAST_INSERT_ID();") or error($PN.'31', $con);
+		$row = mysqli_fetch_array($result);
 
 		$response = array();
 		$response['Result'] = "OK";
@@ -249,15 +249,15 @@
 	else if($_GET["action"] == "update")
 	{
 		if(($id == 1) && ($_SESSION['id'] != 1))
-			error($PN.'32');
+			error($PN.'32', $con);
 
 		if(empty($password))
-			mysql_query("UPDATE users SET fname='".$fname."', lname='".$lname."', email='".$email."', administrator=".$administrator.", enabled=".$enabled." WHERE id = ".$id.";") or error($PN.'33');
+			mysqli_query($con, "UPDATE users SET fname='".$fname."', lname='".$lname."', email='".$email."', administrator=".$administrator.", enabled=".$enabled." WHERE id = ".$id.";") or error($PN.'33', $con);
 		else
-			mysql_query("UPDATE users SET password='".sha1($password)."' WHERE id = ".$id.";") or error($PN.'34');
+			mysqli_query($con, "UPDATE users SET password='".sha1($password)."' WHERE id = ".$id.";") or error($PN.'34', $con);
 
-		$result = mysql_query("SELECT id, fname, lname, email, uname, administrator, enabled FROM users WHERE id = ".$id.";") or error($PN.'35');
-		$row = mysql_fetch_array($result);
+		$result = mysqli_query($con, "SELECT id, fname, lname, email, uname, administrator, enabled FROM users WHERE id = ".$id.";") or error($PN.'35', $con);
+		$row = mysqli_fetch_array($result);
 
 		$response = array();
 		$response['Result'] = "OK";
@@ -267,21 +267,21 @@
 	else if($_GET["action"] == "delete")
 	{
 		if($id == 1)
-			error($PN.'36');
+			error($PN.'36', $con);
 		
-		$result = mysql_query("SELECT COUNT(*) FROM assignment WHERE user_id = ".$id.";") or error($PN.'37');
-		$row = mysql_fetch_row($result);
+		$result = mysqli_query($con, "SELECT COUNT(*) FROM assignment WHERE user_id = ".$id.";") or error($PN.'37', $con);
+		$row = mysqli_fetch_row($con, $result);
 		if($row[0] > 0)
-			error($PN.'38');
+			error($PN.'38', $con);
 
-		mysql_query("DELETE FROM users WHERE id = ".$id.";") or error($PN.'39');
+		mysqli_query($con, "DELETE FROM users WHERE id = ".$id.";") or error($PN.'39', $con);
 
 		$response = array();
 		$response['Result'] = "OK";
 		print json_encode($response);
 	}
 	else
-		error($PN.'40');
+		error($PN.'40', $con);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>

@@ -23,14 +23,14 @@
 
 	include 'function.php';
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 
 	header('Content-Type: text/html; charset=utf-8');
 
 	include 'db.php';
 
 	if(!isset($_GET["action"]))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	if($_GET["action"] == "list")
 	{
@@ -49,7 +49,7 @@
 					$sort .= ', ';
 
 				if(!isset($Sorting_array[0]) || !isset($Sorting_array[1]))
-					error($PN.'12');
+					error($PN.'12', $con);
 
 				switch ($Sorting_array[0])
 				{
@@ -60,7 +60,7 @@
 						$sort .= 'description';
 						break;
 					default:
-						error($PN.'13');
+						error($PN.'13', $con);
 				}
 						
 				if($Sorting_array[1] == 'ASC')
@@ -76,24 +76,24 @@
 			$PageSize = (int)$_GET['jtPageSize'];
 		}
 		else
-			error($PN.'14');
+			error($PN.'14', $con);
 
-		$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM assessment WHERE id IN (SELECT assessment_id FROM assignment WHERE id IN (SELECT assignment_id FROM report_rules)) ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'15');
-		$result2 = mysql_query("SELECT id, assessment_name, description FROM assessment WHERE id IN (SELECT assessment_id FROM assignment WHERE id IN (SELECT assignment_id FROM report_rules)) ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'16');
+		$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM assessment WHERE id IN (SELECT assessment_id FROM assignment WHERE id IN (SELECT assignment_id FROM report_rules)) ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'15', $con);
+		$result2 = mysqli_query($con, "SELECT id, assessment_name, description FROM assessment WHERE id IN (SELECT assessment_id FROM assignment WHERE id IN (SELECT assignment_id FROM report_rules)) ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'16', $con);
 
-		$row = mysql_fetch_array($result);
+		$row = mysqli_fetch_array($result);
 		$recordCount = $row['RecordCount'];
 
 		$rows = array();
-		while($row = mysql_fetch_array($result2))
+		while($row = mysqli_fetch_array($result2))
 		{
 
 			$assessment_id = $row['id'];
-			$result_count1 = mysql_query("SELECT COUNT(*) FROM rules WHERE chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id."));") or error($PN.'17');
-			$array_count1 = mysql_fetch_array($result_count1);
+			$result_count1 = mysqli_query($con, "SELECT COUNT(*) FROM rules WHERE chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id."));") or error($PN.'17', $con);
+			$array_count1 = mysqli_fetch_array($result_count1);
 
-			$result_count2 = mysql_query("SELECT COUNT(DISTINCT rule_id) FROM report_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.");") or error($PN.'18');
-			$array_count2 = mysql_fetch_array($result_count2);
+			$result_count2 = mysqli_query($con, "SELECT COUNT(DISTINCT rule_id) FROM report_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.");") or error($PN.'18', $con);
+			$array_count2 = mysqli_fetch_array($result_count2);
 
 			if($array_count1[0] != 0)
 			{
@@ -124,23 +124,23 @@
 	{
 
 		if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-			error($PN.'19');
+			error($PN.'19', $con);
 
 		if(isset($_POST['id']))
 		{
 			$id = (int)$_POST['id'];
 		}
 		else
-			error($PN.'20');
+			error($PN.'20', $con);
 
-		mysql_query("DELETE FROM report_rules WHERE assignment_id IN (select id FROM assignment WHERE assessment_id = ".$id. ");") or error($PN.'21');
+		mysqli_query($con, "DELETE FROM report_rules WHERE assignment_id IN (select id FROM assignment WHERE assessment_id = ".$id. ");") or error($PN.'21', $con);
 
 		$response = array();
 		$response['Result'] = "OK";
 		print json_encode($response);
 	}
 	else
-		error($PN.'22');
+		error($PN.'22', $con);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>

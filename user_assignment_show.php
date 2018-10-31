@@ -22,7 +22,7 @@
 	include "settings.php";
 	include "function.php";
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 
 	header('Content-Type: text/html; charset=utf-8');
 	
@@ -34,37 +34,37 @@
 	if(isset($_GET['action']) &&  $_GET['action'] == 'assessment')
 	{
 		if(!isset($_GET['user_id']))
-			error($PN.'11');
+			error($PN.'11', $con);
 	
 		$user_id = (int) $_GET['user_id'];
 	
-		$result_user = mysql_query("SELECT id FROM users WHERE id = ".$user_id.";") or error($PN.'12');
-		if(!mysql_fetch_row($result_user))
-			error($PN.'13');
+		$result_user = mysqli_query($con, "SELECT id FROM users WHERE id = ".$user_id.";") or error($PN.'12', $con);
+		if(!mysqli_fetch_row($con, $result_user))
+			error($PN.'13', $con);
 		
-		$result = mysql_query("SELECT A.id AS assignment_id, B.assessment_name FROM (SELECT id, user_id, assessment_id FROM assignment WHERE user_id = ".$user_id." AND status != 3) AS A LEFT JOIN (SELECT id, assessment_name FROM assessment WHERE complete = 0) AS B ON A.assessment_id = B.id ORDER BY B.assessment_name;") or error($PN.'14');
+		$result = mysqli_query($con, "SELECT A.id AS assignment_id, B.assessment_name FROM (SELECT id, user_id, assessment_id FROM assignment WHERE user_id = ".$user_id." AND status != 3) AS A LEFT JOIN (SELECT id, assessment_name FROM assessment WHERE complete = 0) AS B ON A.assessment_id = B.id ORDER BY B.assessment_name;") or error($PN.'14', $con);
 	}
 	else if(isset($_GET['action']) &&  $_GET['action'] == 'chapter')
 	{
 		$assignment_id = (int) $_GET['assignment_id'];
-		$result_assignment = mysql_query("SELECT id FROM assignment WHERE id = ".$assignment_id.";") or error($PN.'15');
-		if(!mysql_fetch_row($result_assignment))
-			error($PN.'16');
+		$result_assignment = mysqli_query($con, "SELECT id FROM assignment WHERE id = ".$assignment_id.";") or error($PN.'15', $con);
+		if(!mysqli_fetch_row($con, $result_assignment))
+			error($PN.'16', $con);
 		
-		$result = mysql_query("SELECT A.chapter_id, B.chapter_name FROM (SELECT chapter_id FROM assignment_chapter WHERE assignment_id = ".$assignment_id." AND status != 3) AS A LEFT JOIN (SELECT id, chapter_name FROM chapters) AS B ON A.chapter_id = B.id ORDER BY A.chapter_id;") or error($PN.'17');
+		$result = mysqli_query($con, "SELECT A.chapter_id, B.chapter_name FROM (SELECT chapter_id FROM assignment_chapter WHERE assignment_id = ".$assignment_id." AND status != 3) AS A LEFT JOIN (SELECT id, chapter_name FROM chapters) AS B ON A.chapter_id = B.id ORDER BY A.chapter_id;") or error($PN.'17', $con);
 	}
 	else
-		error($PN.'18');
+		error($PN.'18', $con);
 
-	while ($row = mysql_fetch_array($result))
+	while ($row = mysqli_fetch_array($result))
 	{
 		if($_GET['action'] == 'chapter')
 		{
-			$result_count1 = mysql_query("SELECT COUNT(*) FROM rules where chapter_id =".$row['chapter_id'].";") or error($PN.'19');
-			$array_count1 = mysql_fetch_array($result_count1);
+			$result_count1 = mysqli_query($con, "SELECT COUNT(*) FROM rules where chapter_id =".$row['chapter_id'].";") or error($PN.'19', $con);
+			$array_count1 = mysqli_fetch_array($result_count1);
 
-			$result_count2 = mysql_query("SELECT COUNT(*) FROM assessment_rules where assignment_id=".$assignment_id." and rule_id IN (SELECT id FROM rules WHERE chapter_id =".$row['chapter_id'].");") or error($PN.'20');
-			$array_count2 = mysql_fetch_array($result_count2);
+			$result_count2 = mysqli_query($con, "SELECT COUNT(*) FROM assessment_rules where assignment_id=".$assignment_id." and rule_id IN (SELECT id FROM rules WHERE chapter_id =".$row['chapter_id'].");") or error($PN.'20', $con);
+			$array_count2 = mysqli_fetch_array($result_count2);
 
 			if($array_count1[0] != 0)
 			{
@@ -84,6 +84,6 @@
 
 	echo json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 
 ?>

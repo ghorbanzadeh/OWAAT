@@ -23,7 +23,7 @@
 	include "function.php";
 
 	if(!isset($_SESSION['user']))
-		error($PN.'10');
+		error($PN.'10', $con);
 		
 	header('Content-Type: text/html; charset=utf-8');
 
@@ -32,9 +32,9 @@
 	$response = array();
 	$rows = array();
 
-	$result = mysql_query("SELECT id, chapter_name FROM chapters order by id") or error($PN.'11');
+	$result = mysqli_query($con, "SELECT id, chapter_name FROM chapters order by id") or error($PN.'11', $con);
   
-	while ($row = mysql_fetch_array($result))
+	while ($row = mysqli_fetch_array($result))
 	{
 		$rows[] = $row;
 	}   
@@ -44,6 +44,6 @@
 
 	echo json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 
 ?>

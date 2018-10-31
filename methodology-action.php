@@ -23,32 +23,32 @@
 
 	include 'function.php';
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 	
 	header('Content-Type: text/html; charset=utf-8');
 	
 	include 'db.php';
 	
 	if(!isset($_GET["action"]))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	if(($_GET["action"] == "update"))
 	{
 		if(isset($_POST["methodology"]))
 		{
 			$methodology_tmp = strip_tags($_POST['methodology']);
-			$methodology = mysql_real_escape_string($methodology_tmp);
+			$methodology = mysqli_real_escape_string($con, $methodology_tmp);
 			$methodology = trim($methodology);
 		}
 		else
-			error($PN.'12');		
+			error($PN.'12', $con);
 
 		if(isset($_POST['id']))
 		{
 			$id = (int)$_POST['id'];
 		}
 		else
-			error($PN.'13');
+			error($PN.'13', $con);
 	}
 
 	if($_GET["action"] == "list")
@@ -69,7 +69,7 @@
 					$sort .= ', ';
 
 				if(!isset($Sorting_array[0]) || !isset($Sorting_array[1]))
-					error($PN.'14');
+					error($PN.'14', $con);
 
 				switch ($Sorting_array[0]) {
 					case "chapter_id":
@@ -88,7 +88,7 @@
 						$sort .= 'methodology';
 						break;
 					default:
-						error($PN.'15');
+						error($PN.'15', $con);
 				}
 					
 				if($Sorting_array[1] == 'ASC')
@@ -104,7 +104,7 @@
 			$PageSize = (int)$_GET['jtPageSize'];
 		}
 		else
-			error($PN.'16');
+			error($PN.'16', $con);
 			
 		if(isset($_GET["select"]))
 			$select = (int)$_GET['select'];
@@ -113,28 +113,28 @@
 
 		if($select == 0)
 		{
-			$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM rules;") or error($PN.'17');
-			$row = mysql_fetch_array($result);
+			$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM rules;") or error($PN.'17', $con);
+			$row = mysqli_fetch_array($result);
 			$recordCount = $row['RecordCount'];
 
-			$result = mysql_query("SELECT id, chapter_id, rule_number, title, level, methodology FROM rules ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'18');
+			$result = mysqli_query($con, "SELECT id, chapter_id, rule_number, title, level, methodology FROM rules ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'18', $con);
 
 			$rows = array();
-			while($row = mysql_fetch_array($result))
+			while($row = mysqli_fetch_array($result))
 			{
 				$rows[] = $row;
 			}
 		}
 		else
 		{
-			$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM rules where chapter_id=".$select.";") or error($PN.'19');
-			$row = mysql_fetch_array($result);
+			$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM rules where chapter_id=".$select.";") or error($PN.'19', $con);
+			$row = mysqli_fetch_array($result);
 			$recordCount = $row['RecordCount'];
 
-			$result = mysql_query("SELECT id, chapter_id, rule_number, title, level, methodology FROM rules where chapter_id=".$select." ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'20');
+			$result = mysqli_query($con, "SELECT id, chapter_id, rule_number, title, level, methodology FROM rules where chapter_id=".$select." ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'20', $con);
 
 			$rows = array();
-			while($row = mysql_fetch_array($result))
+			while($row = mysqli_fetch_array($result))
 			{
 				$rows[] = $row;
 			}		
@@ -150,12 +150,12 @@
 	{
 	
 		if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-			error($PN.'21');
+			error($PN.'21', $con);
 
-		mysql_query("UPDATE rules SET methodology='".$methodology."' WHERE id = ".$id.";") or error($PN.'22');
+		mysqli_query($con, "UPDATE rules SET methodology='".$methodology."' WHERE id = ".$id.";") or error($PN.'22', $con);
 
-		$result = mysql_query("SELECT id, methodology FROM rules WHERE id = ".$id.";") or error($PN.'23');
-		$row = mysql_fetch_array($result);
+		$result = mysqli_query($con, "SELECT id, methodology FROM rules WHERE id = ".$id.";") or error($PN.'23', $con);
+		$row = mysqli_fetch_array($result);
 
 		$response = array();
 		$response['Result'] = "OK";
@@ -164,7 +164,7 @@
 
 	}
 	else
-		error($PN.'24');
+		error($PN.'24', $con);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>

@@ -22,7 +22,7 @@
 	include "settings.php";
 	include "function.php";
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 
 	header('Content-Type: text/html; charset=utf-8');
 
@@ -31,15 +31,15 @@
 	$response = array();
 	$rows = array();
 
-	$result = mysql_query("SELECT id, assessment_name FROM assessment ORDER BY assessment_name") or error($PN.'11');
+	$result = mysqli_query($con, "SELECT id, assessment_name FROM assessment ORDER BY assessment_name") or error($PN.'11', $con);
 
-	while ($row = mysql_fetch_array($result))
+	while ($row = mysqli_fetch_array($result))
 	{
-		$result_count1 = mysql_query("SELECT COUNT(*) FROM (SELECT id, chapter_id, assignment_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$row['id'].")) AS A LEFT JOIN (SELECT id, chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id;") or error($PN.'12');
-		$array_count1 = mysql_fetch_array($result_count1);
+		$result_count1 = mysqli_query($con, "SELECT COUNT(*) FROM (SELECT id, chapter_id, assignment_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$row['id'].")) AS A LEFT JOIN (SELECT id, chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id;") or error($PN.'12', $con);
+		$array_count1 = mysqli_fetch_array($result_count1);
 
-		$result_count2 = mysql_query("SELECT COUNT(*) FROM assessment_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$row['id'].");") or error($PN.'13');
-		$array_count2 = mysql_fetch_array($result_count2);
+		$result_count2 = mysqli_query($con, "SELECT COUNT(*) FROM assessment_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$row['id'].");") or error($PN.'13', $con);
+		$array_count2 = mysqli_fetch_array($result_count2);
 
 		if($array_count1[0] != 0)
 		{
@@ -59,6 +59,6 @@
 
 	echo json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 
 ?>

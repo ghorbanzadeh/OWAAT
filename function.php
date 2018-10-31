@@ -156,7 +156,8 @@
 		return $string;
 	}
 
-	function error($error_number)
+	// $con is only null if an error occurred during the connection
+	function error($error_number, $con = null)
 	{
 		$PageNumber = substr($error_number, 0, 2);
 		$ErrorNumber = substr($error_number, 2);
@@ -165,7 +166,8 @@
 		$response['Message'] = message_get($PageNumber, $ErrorNumber);
 		print json_encode($response);
 
-		@mysql_close();
+
+		$con && @mysqli_close($con);
 		
 		exit();
 	}
@@ -721,7 +723,7 @@
 			return '#'.$PageNumber.$ErrorNumber.' - An Unknown Error Has Been Occurred.';
 	}
 	
-	function log_save($user_id, $action, $data)
+	function log_save($user_id, $action, $data, $con)
 	{
 		$ip = $_SERVER['REMOTE_ADDR'];
 
@@ -734,6 +736,6 @@
 			}
 		}
 
-		mysql_query("INSERT INTO logging(user_id, ip, data, time, action) VALUES(".$user_id.",'".$ip."', '".$data_save."', NOW(),".$action.");") or error('4410');
+		mysqli_query($con, "INSERT INTO logging(user_id, ip, data, time, action) VALUES(".$user_id.",'".$ip."', '".$data_save."', NOW(),".$action.");") or error('4410', $con);
 	}
 ?>

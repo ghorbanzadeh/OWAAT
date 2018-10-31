@@ -29,22 +29,21 @@
 	include 'db.php';
 
 	if(isset($_SESSION['user']))
-		error($PN.'10');
+		error($PN.'10', $con);
 
 		$response = array();
 
 	if(isset($_POST['uname']) && isset($_POST['password']) && !empty($_POST['uname']) && !empty($_POST['password']))
 	{
-		$uname = mysql_real_escape_string($_POST['uname']);
-		$password = mysql_real_escape_string($_POST['password']);
+		$uname = mysqli_real_escape_string($con, $_POST['uname']);
+		$password = mysqli_real_escape_string($con, $_POST['password']);
 	
-		$result = mysql_query("SELECT id, uname, administrator FROM users WHERE uname='".$uname."' AND password='".sha1($password)."' AND enabled=1") or error($PN.'11');
+		$result = mysqli_query($con, "SELECT id, uname, administrator FROM users WHERE uname='".$uname."' AND password='".sha1($password)."' AND enabled=1") or error($PN.'11', $con);
   
-		$array = mysql_fetch_array($result);
+		$array = mysqli_fetch_array($result);
 
 		if($array)
 		{
-
 			$response['Result'] = 'OK';
 			
 			$_SESSION['user']= $array["uname"];
@@ -56,25 +55,25 @@
 			$_SESSION['token'] = mt_rand_str(30);
 
 			$data['uname'] = $uname;
-			log_save($array["id"], 1, $data);
+			log_save($array["id"], 1, $data, $con);
 		}
 		else
 		{
 			$data['uname'] = $uname;
-			log_save(0, 2, $data);
-			error($PN.'12');
+			log_save(0, 2, $data, $con);
+			error($PN.'12', $con);
 		}
 	}
 	else
-		error($PN.'13');
+		error($PN.'13', $con);
 	
 	print json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 	
-	function log_login($user_id, $uname, $ip, $status)
+	function log_login($user_id, $uname, $ip, $status, $con)
 	{
 		global $PN;
-		mysql_query("INSERT INTO logging(user_id, ip, data, time, action) VALUES(".$user_id.", '".$ip."', '[uname=".$uname."]', NOW(),".$status.");") or error($PN.'14');
+		mysqli_query($con, "INSERT INTO logging(user_id, ip, data, time, action) VALUES(".$user_id.", '".$ip."', '[uname=".$uname."]', NOW(),".$status.");") or error($PN.'14', $con);
 	}
 ?>

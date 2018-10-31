@@ -23,14 +23,14 @@
 	include 'function.php';
 
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 	
 	header('Content-Type: text/html; charset=utf-8');
 	
 	include 'db.php';
 
 	if(!isset($_GET['action']))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	if(isset($_GET["jtSorting"]) && isset($_GET["jtStartIndex"]) && isset($_GET["jtPageSize"]))
 	{
@@ -46,7 +46,7 @@
 				$sort .= ', ';
 
 			if(!isset($Sorting_array[0]) || !isset($Sorting_array[1]))
-				error($PN.'12');
+				error($PN.'12', $con);
 
 			switch ($Sorting_array[0]) {
 				case "chapter_id":
@@ -71,7 +71,7 @@
 					$sort .= 'H.last_modified';
 					break;
 				default:
-					error($PN.'13');
+					error($PN.'13', $con);
 			}
 				
 			if($Sorting_array[1] == 'ASC')
@@ -87,7 +87,7 @@
 		$PageSize = (int)$_GET['jtPageSize'];
 	}
 	else
-		error($PN.'14');
+		error($PN.'14', $con);
 	
 	$assessment_id = '';
 	$chapters_id = '';
@@ -99,10 +99,10 @@
 			$assessment_id = (int) $_GET["assessment_id"];
 		}
 		else
-			error($PN.'15');	
+			error($PN.'15', $con);
 	}
 	else
-		error($PN.'16');
+		error($PN.'16', $con);
 
 	if($_GET['action'] == "user" || $_GET['action'] == "chapter")
 	{
@@ -120,7 +120,7 @@
 			}
 		}
 		else
-			error($PN.'17');
+			error($PN.'17', $con);
 	}
 
 	if($_GET['action'] == "chapter")
@@ -140,35 +140,35 @@
 
 		}
 		else
-			error($PN.'18');
+			error($PN.'18', $con);
 	}
 	
 	if($_GET['action'] == "assessment")
 	{
-		$result_assignment_chapters_id = mysql_query("SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id.");") or error($PN.'19');
+		$result_assignment_chapters_id = mysqli_query($con, "SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id.");") or error($PN.'19', $con);
 	}
 	else if($_GET['action'] == "user")
 	{
 		if($users_id != 0)
-			$result_assignment_chapters_id = mysql_query("SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (".$users_id."));") or error($PN.'20');
+			$result_assignment_chapters_id = mysqli_query($con, "SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (".$users_id."));") or error($PN.'20', $con);
 		else
-			$result_assignment_chapters_id = mysql_query("SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id ORDER BY id));") or error($PN.'21');
+			$result_assignment_chapters_id = mysqli_query($con, "SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id ORDER BY id));") or error($PN.'21', $con);
 
 	}
 	else
 	{
 		if($users_id != 0 && $chapters_id != 0)
-			$result_assignment_chapters_id = mysql_query("SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (".$users_id.")) AND chapter_id IN (".$chapters_id.")") or error($PN.'22');
+			$result_assignment_chapters_id = mysqli_query($con, "SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (".$users_id.")) AND chapter_id IN (".$chapters_id.")") or error($PN.'22', $con);
 		else if($users_id != 0 && $chapters_id == 0)
-			$result_assignment_chapters_id = mysql_query("SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (".$users_id.")) AND chapter_id IN (SELECT id FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." and user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id)) ORDER BY id))") or error($PN.'23');
+			$result_assignment_chapters_id = mysqli_query($con, "SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (".$users_id.")) AND chapter_id IN (SELECT id FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." and user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id)) ORDER BY id))") or error($PN.'23', $con);
 		else if($users_id == 0 && $chapters_id != 0)
-			$result_assignment_chapters_id = mysql_query("SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id ORDER BY id)) AND chapter_id IN (".$chapters_id.")") or error($PN.'24');
+			$result_assignment_chapters_id = mysqli_query($con, "SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id ORDER BY id)) AND chapter_id IN (".$chapters_id.")") or error($PN.'24', $con);
 		else
-			$result_assignment_chapters_id = mysql_query("SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id ORDER BY id)) AND chapter_id IN (SELECT id FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." and user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id)) ORDER BY id))") or error($PN.'25');
+			$result_assignment_chapters_id = mysqli_query($con, "SELECT id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id ORDER BY id)) AND chapter_id IN (SELECT id FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." and user_id IN (SELECT user_id FROM (SELECT user_id from assignment WHERE assessment_id=".$assessment_id.") AS A LEFT JOIN (SELECT id FROM users) AS B on A.user_id = B.id)) ORDER BY id))") or error($PN.'25', $con);
 	}
 
 	$assignment_chapters_id = '';
-	while($row_assignment_chapters_id = mysql_fetch_array($result_assignment_chapters_id))
+	while($row_assignment_chapters_id = mysqli_fetch_array($result_assignment_chapters_id))
 	{
 		if($row_assignment_chapters_id['id'] > 0)//It has value
 		{
@@ -180,25 +180,25 @@
 	}
 		
 	if($assignment_chapters_id == '')
-		error($PN.'26');
+		error($PN.'26', $con);
 
 	$response = array();
 	
-	$result_report_id = mysql_query("SELECT A.id AS report_rules_id, B.id AS assessment_rules_id FROM (SELECT id, assignment_id, rule_id FROM report_rules WHERE assignment_id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS A LEFT JOIN (SELECT id, assignment_id, rule_id FROM assessment_rules WHERE assignment_id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS B ON A.assignment_id = B.assignment_id AND A.rule_id = B.rule_id;") or error($PN.'27');
+	$result_report_id = mysqli_query($con, "SELECT A.id AS report_rules_id, B.id AS assessment_rules_id FROM (SELECT id, assignment_id, rule_id FROM report_rules WHERE assignment_id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS A LEFT JOIN (SELECT id, assignment_id, rule_id FROM assessment_rules WHERE assignment_id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS B ON A.assignment_id = B.assignment_id AND A.rule_id = B.rule_id;") or error($PN.'27', $con);
 	$rows_report_id = array();
-	while($row_report_id = mysql_fetch_array($result_report_id))
+	while($row_report_id = mysqli_fetch_array($result_report_id))
 	{
 		$rows_report_id[] = $row_report_id;
 	}
 
-	$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM (SELECT E.assignment_id, E.id FROM (SELECT A.assignment_id, B.id, B.chapter_id FROM (SELECT chapter_id, assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id.")) AS A LEFT JOIN (SELECT rules.id, rules.chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id) AS E LEFT JOIN (SELECT C.id, D.uname FROM (SELECT id, user_id FROM assignment WHERE id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS C LEFT JOIN (SELECT id, uname FROM users) AS D ON C.user_id = D.id) AS F ON E.assignment_id =F.id) AS G INNER JOIN (SELECT assignment_id, rule_id FROM assessment_rules WHERE assignment_id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS H ON G.id = H.rule_id and H.assignment_id=G.assignment_id") or error($PN.'28');
-	$result2 = mysql_query("SELECT G.chapter_id, G.rule_number, G.title, G.uname, H.id, H.PassOrFail, H.comment, H.last_modified FROM (SELECT E.assignment_id, E.id, E.chapter_id, E.rule_number, E.title, F.uname FROM (SELECT A.assignment_id, B.id, B.chapter_id, B.rule_number, B.title FROM (SELECT chapter_id, assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id.")) AS A LEFT JOIN (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title FROM rules) AS B ON A.chapter_id = B.chapter_id) AS E LEFT JOIN (SELECT C.id, D.uname FROM (SELECT id, user_id FROM assignment WHERE id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS C LEFT JOIN (SELECT id, uname FROM users) AS D ON C.user_id = D.id) AS F ON E.assignment_id =F.id) AS G INNER JOIN (SELECT id, assignment_id, rule_id, PassOrFail, comment, last_modified FROM assessment_rules WHERE assignment_id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS H ON G.id = H.rule_id and H.assignment_id=G.assignment_id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'29');
+	$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM (SELECT E.assignment_id, E.id FROM (SELECT A.assignment_id, B.id, B.chapter_id FROM (SELECT chapter_id, assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id.")) AS A LEFT JOIN (SELECT rules.id, rules.chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id) AS E LEFT JOIN (SELECT C.id, D.uname FROM (SELECT id, user_id FROM assignment WHERE id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS C LEFT JOIN (SELECT id, uname FROM users) AS D ON C.user_id = D.id) AS F ON E.assignment_id =F.id) AS G INNER JOIN (SELECT assignment_id, rule_id FROM assessment_rules WHERE assignment_id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS H ON G.id = H.rule_id and H.assignment_id=G.assignment_id") or error($PN.'28', $con);
+	$result2 = mysqli_query($con, "SELECT G.chapter_id, G.rule_number, G.title, G.uname, H.id, H.PassOrFail, H.comment, H.last_modified FROM (SELECT E.assignment_id, E.id, E.chapter_id, E.rule_number, E.title, F.uname FROM (SELECT A.assignment_id, B.id, B.chapter_id, B.rule_number, B.title FROM (SELECT chapter_id, assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id.")) AS A LEFT JOIN (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title FROM rules) AS B ON A.chapter_id = B.chapter_id) AS E LEFT JOIN (SELECT C.id, D.uname FROM (SELECT id, user_id FROM assignment WHERE id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS C LEFT JOIN (SELECT id, uname FROM users) AS D ON C.user_id = D.id) AS F ON E.assignment_id =F.id) AS G INNER JOIN (SELECT id, assignment_id, rule_id, PassOrFail, comment, last_modified FROM assessment_rules WHERE assignment_id IN (SELECT assignment_id FROM assignment_chapter WHERE id IN (".$assignment_chapters_id."))) AS H ON G.id = H.rule_id and H.assignment_id=G.assignment_id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'29', $con);
 
-	$row = mysql_fetch_array($result);
+	$row = mysqli_fetch_array($result);
 	$recordCount = $row['RecordCount'];
 
 	$rows = array();
-	while($row = mysql_fetch_array($result2))
+	while($row = mysqli_fetch_array($result2))
 	{
 		$row['selected'] = '0';
 		$row['report_rules_id'] = '0';
@@ -222,5 +222,5 @@
 
 	print json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>
