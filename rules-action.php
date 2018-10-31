@@ -23,18 +23,18 @@
 
 	include 'function.php';
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 
 	header('Content-Type: text/html; charset=utf-8');
 
 	include 'db.php';
 
 	if(!isset($_GET["action"]))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	if($_GET["action"] != "list")
 		if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-			error($PN.'12');
+			error($PN.'12', $con);
 
 	if(($_GET["action"] == "create") || ($_GET["action"] == "update"))
 	{
@@ -45,19 +45,19 @@
 			$rule_number = (int)$_POST['rule_number'];
 
 			$title_tmp = strip_tags($_POST['title']);
-			$title = mysql_real_escape_string($title_tmp);
+			$title = mysqli_real_escape_string($con, $title_tmp);
 			$title = trim($title);
 
 			$level = (int)$_POST['level'];
 			
 			if(!($level == 1 || $level == 2 || $level == 3))
-				error($PN.'59');
+				error($PN.'59', $con);
 
 			if(empty($chapter_id) || empty($rule_number) || empty($title) || empty($level))
-				error($PN.'13');
+				error($PN.'13', $con);
 		}
 		else
-			error($PN.'14');		
+			error($PN.'14', $con);
 	}
 
 	if(($_GET["action"] == "update") || ($_GET["action"] == "delete"))
@@ -67,7 +67,7 @@
 			$id = (int)$_POST['id'];
 		}
 		else
-			error($PN.'15');
+			error($PN.'15', $con);
 	}
 
 	if($_GET["action"] == "list")
@@ -88,7 +88,7 @@
 					$sort .= ', ';
 
 				if(!isset($Sorting_array[0]) || !isset($Sorting_array[1]))
-					error($PN.'16');
+					error($PN.'16', $con);
 
 				switch ($Sorting_array[0]) {
 					case "chapter_id":
@@ -104,7 +104,7 @@
 						$sort .= 'title';
 						break;
 					default:
-						error($PN.'17');
+						error($PN.'17', $con);
 				}
 					
 				if($Sorting_array[1] == 'ASC')
@@ -120,7 +120,7 @@
 			$PageSize = (int)$_GET['jtPageSize'];
 		}
 		else
-			error($PN.'18');
+			error($PN.'18', $con);
 			
 		if(isset($_GET["select"]))
 			$select = (int)$_GET['select'];
@@ -129,28 +129,28 @@
 
 		if($select == 0)
 		{
-			$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM rules;") or error($PN.'19');
-			$row = mysql_fetch_array($result);
+			$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM rules;") or error($PN.'19', $con);
+			$row = mysqli_fetch_array($result);
 			$recordCount = $row['RecordCount'];
 
-			$result = mysql_query("SELECT id, chapter_id, rule_number, title, level FROM rules ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'20');
+			$result = mysqli_query($con, "SELECT id, chapter_id, rule_number, title, level FROM rules ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'20', $con);
 
 			$rows = array();
-			while($row = mysql_fetch_array($result))
+			while($row = mysqli_fetch_array($result))
 			{
 				$rows[] = $row;
 			}
 		}
 		else
 		{
-			$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM rules where chapter_id=".$select.";") or error($PN.'21');
-			$row = mysql_fetch_array($result);
+			$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM rules where chapter_id=".$select.";") or error($PN.'21', $con);
+			$row = mysqli_fetch_array($result);
 			$recordCount = $row['RecordCount'];
 
-			$result = mysql_query("SELECT id, chapter_id, rule_number, title, level FROM rules where chapter_id=".$select." ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'22');
+			$result = mysqli_query($con, "SELECT id, chapter_id, rule_number, title, level FROM rules where chapter_id=".$select." ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'22', $con);
 
 			$rows = array();
-			while($row = mysql_fetch_array($result))
+			while($row = mysqli_fetch_array($result))
 			{
 				$rows[] = $row;
 			}		
@@ -164,24 +164,24 @@
 	}
 	else if($_GET["action"] == "create")
 	{
-		$result1 = mysql_query("SELECT * FROM chapters WHERE id = ".$chapter_id.";") or error($PN.'37');
-		$row1 = mysql_fetch_array($result1);
+		$result1 = mysqli_query($con, "SELECT * FROM chapters WHERE id = ".$chapter_id.";") or error($PN.'37', $con);
+		$row1 = mysqli_fetch_array($result1);
 		
 		if(!$row1)
-		  error($PN.'38');
+		  error($PN.'38', $con);
 
-		$result2 = mysql_query("SELECT id FROM rules WHERE chapter_id = ".$chapter_id." and rule_number = ".$rule_number.";") or error($PN.'23');
-		$row2 = mysql_fetch_array($result2);
+		$result2 = mysqli_query($con, "SELECT id FROM rules WHERE chapter_id = ".$chapter_id." and rule_number = ".$rule_number.";") or error($PN.'23', $con);
+		$row2 = mysqli_fetch_array($result2);
 		
 		if($row2)
-		  error($PN.'24');
+		  error($PN.'24', $con);
 		
-		mysql_query("INSERT INTO rules(chapter_id, rule_number, title, level) VALUES(".$chapter_id.",".$rule_number.",'".$title."',".$level.");") or error($PN.'25');
+		mysqli_query($con, "INSERT INTO rules(chapter_id, rule_number, title, level) VALUES(".$chapter_id.",".$rule_number.",'".$title."',".$level.");") or error($PN.'25', $con);
 
 		uncompleted($chapter_id);
 
-		$result = mysql_query("SELECT id, chapter_id, rule_number, title, level FROM rules WHERE id = LAST_INSERT_ID();") or error($PN.'26');
-		$row = mysql_fetch_array($result);
+		$result = mysqli_query($con, "SELECT id, chapter_id, rule_number, title, level FROM rules WHERE id = LAST_INSERT_ID();") or error($PN.'26', $con);
+		$row = mysqli_fetch_array($result);
 
 		$response = array();
 		$response['Result'] = "OK";
@@ -191,47 +191,47 @@
 	else if($_GET["action"] == "update")
 	{
 	
-		$result_chapter = mysql_query("SELECT * FROM chapters WHERE id = ".$chapter_id.";") or error($PN.'44');
-		$row_chapter = mysql_fetch_array($result_chapter);
+		$result_chapter = mysqli_query($con, "SELECT * FROM chapters WHERE id = ".$chapter_id.";") or error($PN.'44', $con);
+		$row_chapter = mysqli_fetch_array($result_chapter);
 		
 		if(!$row_chapter)
-		  error($PN.'45');
+		  error($PN.'45', $con);
 
-		$result1 = mysql_query("SELECT id FROM rules WHERE chapter_id = ".$chapter_id." AND rule_number = ".$rule_number." AND id != ".$id.";") or error($PN.'27');
-		$row1 = mysql_fetch_array($result1);
+		$result1 = mysqli_query($con, "SELECT id FROM rules WHERE chapter_id = ".$chapter_id." AND rule_number = ".$rule_number." AND id != ".$id.";") or error($PN.'27', $con);
+		$row1 = mysqli_fetch_array($result1);
 		
 		if($row1)
-		  error($PN.'28');
+		  error($PN.'28', $con);
 
-		$result = mysql_query("SELECT chapter_id FROM rules WHERE id = ".$id.";") or error($PN.'39');
-		$row = mysql_fetch_array($result);
+		$result = mysqli_query($con, "SELECT chapter_id FROM rules WHERE id = ".$id.";") or error($PN.'39', $con);
+		$row = mysqli_fetch_array($result);
 		
 		$chapter_id_changed = false;
 		if($row['chapter_id'] != $chapter_id)
 		{
-			$result = mysql_query("SELECT rule_id FROM assessment_rules WHERE rule_id = ".$id.";") or error($PN.'40');
-			if(mysql_fetch_array($result))
-				error($PN.'41');
+			$result = mysqli_query($con, "SELECT rule_id FROM assessment_rules WHERE rule_id = ".$id.";") or error($PN.'40', $con);
+			if(mysqli_fetch_array($result))
+				error($PN.'41', $con);
 			else
 			{
-				$result = mysql_query("SELECT rule_id FROM report_rules WHERE rule_id = ".$id.";") or error($PN.'42');
-				if(mysql_fetch_array($result))
-					error($PN.'43');
+				$result = mysqli_query($con, "SELECT rule_id FROM report_rules WHERE rule_id = ".$id.";") or error($PN.'42', $con);
+				if(mysqli_fetch_array($result))
+					error($PN.'43', $con);
 			}
 			
 			$chapter_id_changed = true;
 		}
 
-		mysql_query("UPDATE rules SET chapter_id=".$chapter_id.", rule_number=".$rule_number.", title='".$title."', level=".$level." WHERE id = ".$id.";") or error($PN.'29');
+		mysqli_query($con, "UPDATE rules SET chapter_id=".$chapter_id.", rule_number=".$rule_number.", title='".$title."', level=".$level." WHERE id = ".$id.";") or error($PN.'29', $con);
 
-		if(($chapter_id_changed == true) && (mysql_affected_rows() == 1))
+		if(($chapter_id_changed == true) && (mysqli_affected_rows($con)  == 1))
 		{
 			uncompleted($chapter_id);
 			iscompleted($row['chapter_id']);
 		}
 
-		$result = mysql_query("SELECT id, chapter_id, rule_number, title, level FROM rules WHERE id = ".$id.";") or error($PN.'30');
-		$row = mysql_fetch_array($result);
+		$result = mysqli_query($con, "SELECT id, chapter_id, rule_number, title, level FROM rules WHERE id = ".$id.";") or error($PN.'30', $con);
+		$row = mysqli_fetch_array($result);
 
 		$response = array();
 		$response['Result'] = "OK";
@@ -241,22 +241,22 @@
 	else if($_GET["action"] == "delete")
 	{
 
-		$result = mysql_query("SELECT rule_id FROM assessment_rules WHERE rule_id = ".$id.";") or error($PN.'31');
-		if(mysql_fetch_array($result))
-			error($PN.'32');
+		$result = mysqli_query($con, "SELECT rule_id FROM assessment_rules WHERE rule_id = ".$id.";") or error($PN.'31', $con);
+		if(mysqli_fetch_array($result))
+			error($PN.'32', $con);
 		else
 		{
-			$result = mysql_query("SELECT rule_id FROM report_rules WHERE rule_id = ".$id.";") or error($PN.'33');
-			if(mysql_fetch_array($result))
-				error($PN.'34');
+			$result = mysqli_query($con, "SELECT rule_id FROM report_rules WHERE rule_id = ".$id.";") or error($PN.'33', $con);
+			if(mysqli_fetch_array($result))
+				error($PN.'34', $con);
 		}
 
-		$result = mysql_query("SELECT chapter_id FROM rules WHERE id = ".$id.";") or error($PN.'49');
-		$row = mysql_fetch_array($result);
+		$result = mysqli_query($con, "SELECT chapter_id FROM rules WHERE id = ".$id.";") or error($PN.'49', $con);
+		$row = mysqli_fetch_array($result);
 		if($row['chapter_id'] == '')
-			error($PN.'60');			
+			error($PN.'60', $con);
 
-		mysql_query("DELETE FROM rules WHERE id = ".$id. ";") or error($PN.'35');
+		mysqli_query($con, "DELETE FROM rules WHERE id = ".$id. ";") or error($PN.'35', $con);
 
 		iscompleted($row['chapter_id']);
 
@@ -265,61 +265,61 @@
 		print json_encode($response);
 	}
 	else
-		error($PN.'36');
+		error($PN.'36', $con);
 
 	function uncompleted($chapter_id)
 	{
 		global $PN;
 		//Change Completed to Uncompleted in assignment_chapter Table
-		mysql_query("UPDATE assignment_chapter SET status=2 WHERE chapter_id=".$chapter_id.";") or error($PN.'46');
+		mysqli_query($con, "UPDATE assignment_chapter SET status=2 WHERE chapter_id=".$chapter_id.";") or error($PN.'46', $con);
 
 		//Change Completed to Uncompleted in assignment Table
-		mysql_query("UPDATE assignment SET status=2 WHERE id IN (SELECT assignment_id FROM assignment_chapter WHERE chapter_id=".$chapter_id.") AND status=3;") or error($PN.'47');
+		mysqli_query($con, "UPDATE assignment SET status=2 WHERE id IN (SELECT assignment_id FROM assignment_chapter WHERE chapter_id=".$chapter_id.") AND status=3;") or error($PN.'47', $con);
 
 		//Set Complete=0 in assessment Table
-		mysql_query("UPDATE assessment SET complete=0, complete_time='0' WHERE id IN (SELECT assessment_id FROM assignment WHERE id IN (SELECT assignment_id FROM assignment_chapter WHERE chapter_id=".$chapter_id.")) AND complete=1;") or error($PN.'48');
+		mysqli_query($con, "UPDATE assessment SET complete=0, complete_time='0' WHERE id IN (SELECT assessment_id FROM assignment WHERE id IN (SELECT assignment_id FROM assignment_chapter WHERE chapter_id=".$chapter_id.")) AND complete=1;") or error($PN.'48', $con);
 	}
 	
 	function iscompleted($chapter_id)
 	{
 		global $PN;
 		$rows = array();
-		$result = mysql_query("SELECT assignment_id FROM assignment_chapter WHERE chapter_id=".$chapter_id.";") or error($PN.'50');
-		while($row = mysql_fetch_array($result))
+		$result = mysqli_query($con, "SELECT assignment_id FROM assignment_chapter WHERE chapter_id=".$chapter_id.";") or error($PN.'50', $con);
+		while($row = mysqli_fetch_array($result))
 		{
 			$assignment_id = $row['assignment_id'];	
 		
-			$result_count1 = mysql_query("SELECT COUNT(*) FROM rules WHERE chapter_id =".$chapter_id.";") or error($PN.'51');
-			$array_count1 = mysql_fetch_array($result_count1);
+			$result_count1 = mysqli_query($con, "SELECT COUNT(*) FROM rules WHERE chapter_id =".$chapter_id.";") or error($PN.'51', $con);
+			$array_count1 = mysqli_fetch_array($result_count1);
 
-			$result_count2 = mysql_query("SELECT COUNT(*) FROM assessment_rules WHERE assignment_id=".$assignment_id." AND rule_id IN (SELECT id FROM rules WHERE chapter_id =".$chapter_id.");") or error($PN.'52');
-			$array_count2 = mysql_fetch_array($result_count2);
+			$result_count2 = mysqli_query($con, "SELECT COUNT(*) FROM assessment_rules WHERE assignment_id=".$assignment_id." AND rule_id IN (SELECT id FROM rules WHERE chapter_id =".$chapter_id.");") or error($PN.'52', $con);
+			$array_count2 = mysqli_fetch_array($result_count2);
 			
 			//Set status=3 in assignment_chapter Table
 			if($array_count1[0] == $array_count2[0])
 			{
-				mysql_query("UPDATE assignment_chapter SET status=3 WHERE assignment_id=".$assignment_id." AND chapter_id=".$chapter_id.";") or error($PN.'53');
+				mysqli_query($con, "UPDATE assignment_chapter SET status=3 WHERE assignment_id=".$assignment_id." AND chapter_id=".$chapter_id.";") or error($PN.'53', $con);
 			}
 
 			//Change Uncompleted to Completed in assignment Table
-			$result3 = mysql_query("SELECT COUNT(*) FROM assignment_chapter WHERE assignment_id=".$assignment_id." and status!=3;") or error($PN.'54');
-			$array3 = mysql_fetch_array($result3);
+			$result3 = mysqli_query($con, "SELECT COUNT(*) FROM assignment_chapter WHERE assignment_id=".$assignment_id." and status!=3;") or error($PN.'54', $con);
+			$array3 = mysqli_fetch_array($result3);
 			if($array3[0] == 0)
 			{
-				mysql_query("UPDATE assignment SET status=3 WHERE id=".$assignment_id." AND status=2;") or error($PN.'55');
+				mysqli_query($con, "UPDATE assignment SET status=3 WHERE id=".$assignment_id." AND status=2;") or error($PN.'55', $con);
 				$row['completed'] = 'Yes';
 			}
 
 			//Set Complete=1 in assessment Table
-			$result4 = mysql_query("SELECT assessment_id FROM assignment WHERE id=".$assignment_id.";") or error($PN.'56');
-			$array4 = mysql_fetch_array($result4);
+			$result4 = mysqli_query($con, "SELECT assessment_id FROM assignment WHERE id=".$assignment_id.";") or error($PN.'56', $con);
+			$array4 = mysqli_fetch_array($result4);
 
-			$result5 = mysql_query("SELECT COUNT(*) FROM assignment WHERE assessment_id=".$array4[0]." AND status!=3;") or error($PN.'57');
-			$array5 = mysql_fetch_array($result5);
+			$result5 = mysqli_query($con, "SELECT COUNT(*) FROM assignment WHERE assessment_id=".$array4[0]." AND status!=3;") or error($PN.'57', $con);
+			$array5 = mysqli_fetch_array($result5);
 			if($array5[0] == 0)
-				mysql_query("UPDATE assessment SET complete=1, complete_time= NOW() WHERE id=".$array4[0].";") or error($PN.'58');	
+				mysqli_query($con, "UPDATE assessment SET complete=1, complete_time= NOW() WHERE id=".$array4[0].";") or error($PN.'58', $con);
 		}
 	}
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>

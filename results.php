@@ -27,7 +27,7 @@
 	header('Content-Type: text/html; charset=utf-8');
 
     if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 	
 	include 'db.php';
 	include 'certificate/config.php';
@@ -45,14 +45,14 @@
 		$assessment_id = (int)$_GET['assessment_id'];
 	}
 	else
-		error($PN.'11');
+		error($PN.'11', $con);
 	
-	$result_assessment_name = mysql_query("SELECT assessment_name FROM assessment WHERE id=".$assessment_id.";") or error($PN.'12');
-	$row_assessment_name = mysql_fetch_array($result_assessment_name);
+	$result_assessment_name = mysqli_query($con, "SELECT assessment_name FROM assessment WHERE id=".$assessment_id.";") or error($PN.'12', $con);
+	$row_assessment_name = mysqli_fetch_array($result_assessment_name);
 	if($row_assessment_name['assessment_name'])
 		define ('ASSESSMENT_NAME', $row_assessment_name['assessment_name']);
 	else
-		error($PN.'13');
+		error($PN.'13', $con);
 		
 	define ('HEADER_TITLE', 'OWASP ASVS');
 	
@@ -99,19 +99,19 @@
 	$pdf->setLanguageArray($lg);
 
 	$level = 0;
-	$result_level = mysql_query("SELECT COUNT(*) FROM report_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.") AND PassOrFail=2 AND rule_id IN (SELECT id FROM rules WHERE level=1);") or error($PN.'14');
-	$row_level = mysql_fetch_array($result_level);
+	$result_level = mysqli_query($con, "SELECT COUNT(*) FROM report_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.") AND PassOrFail=2 AND rule_id IN (SELECT id FROM rules WHERE level=1);") or error($PN.'14', $con);
+	$row_level = mysqli_fetch_array($result_level);
 	if($row_level[0] == 0)
 	{
 		$level = 1;
-		$result_level = mysql_query("SELECT COUNT(*) FROM report_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.") AND PassOrFail=2 AND rule_id IN (SELECT id FROM rules WHERE level=2);") or error($PN.'15');
-		$row_level = mysql_fetch_array($result_level);
+		$result_level = mysqli_query($con, "SELECT COUNT(*) FROM report_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.") AND PassOrFail=2 AND rule_id IN (SELECT id FROM rules WHERE level=2);") or error($PN.'15', $con);
+		$row_level = mysqli_fetch_array($result_level);
 		if($row_level[0] == 0)
 		{
 			$level = 2;
 
-			$result_level = mysql_query("SELECT COUNT(*) FROM report_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.") AND PassOrFail=2 AND rule_id IN (SELECT id FROM rules WHERE level=3);") or error($PN.'16');
-			$row_level = mysql_fetch_array($result_level);
+			$result_level = mysqli_query($con, "SELECT COUNT(*) FROM report_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.") AND PassOrFail=2 AND rule_id IN (SELECT id FROM rules WHERE level=3);") or error($PN.'16', $con);
+			$row_level = mysqli_fetch_array($result_level);
 			if($row_level[0] == 0)
 			{
 				$level = 3;
@@ -140,28 +140,28 @@
 	$pdf->Cell(0, 10, 'Certificate', 0, 1, 'L');
 	$pdf->WriteHTML($html_certificate, true, 0, true, 0);
 
-	$results_tmp_exists = mysql_query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '".$databaseName."' AND table_name = 'results_tmp';") or error($PN.'24');
-	$row_tmp_exists = mysql_fetch_array($results_tmp_exists);
+	$results_tmp_exists = mysqli_query($con, "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '".$databaseName."' AND table_name = 'results_tmp';") or error($PN.'24', $con);
+	$row_tmp_exists = mysqli_fetch_array($results_tmp_exists);
 	if($row_tmp_exists[0] > 0)	
-		mysql_query("DROP TABLE results_tmp;") or error($PN.'25');
+		mysqli_query($con, "DROP TABLE results_tmp;") or error($PN.'25', $con);
 
-	mysql_query("CREATE TABLE results_tmp AS SELECT E.id, F.chapter_id, F.rule_number, F.title, E.PassOrFail, E.comment FROM (SELECT C.id, C.rule_id, C.PassOrFail, C.comment FROM (SELECT A.id, A.rule_id, A.PassOrFail, A.comment, B.user_id FROM (SELECT report_rules.id, report_rules.assignment_id, report_rules.rule_id, report_rules.PassOrFail, report_rules.comment FROM report_rules WHERE report_rules.PassOrFail !=0 AND report_rules.assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.")) AS A left join (SELECT assignment.id, assignment.user_id FROM assignment WHERE assessment_id=".$assessment_id.") AS B on A.assignment_id=B.id) AS C left join (SELECT users.id FROM users) AS D on C.user_id=D.id) AS E left join (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title FROM rules) AS F on E.rule_id=F.id ORDER BY F.chapter_id, F.rule_number;") or error($PN.'17');
+	mysqli_query($con, "CREATE TABLE results_tmp AS SELECT E.id, F.chapter_id, F.rule_number, F.title, E.PassOrFail, E.comment FROM (SELECT C.id, C.rule_id, C.PassOrFail, C.comment FROM (SELECT A.id, A.rule_id, A.PassOrFail, A.comment, B.user_id FROM (SELECT report_rules.id, report_rules.assignment_id, report_rules.rule_id, report_rules.PassOrFail, report_rules.comment FROM report_rules WHERE report_rules.PassOrFail !=0 AND report_rules.assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.")) AS A left join (SELECT assignment.id, assignment.user_id FROM assignment WHERE assessment_id=".$assessment_id.") AS B on A.assignment_id=B.id) AS C left join (SELECT users.id FROM users) AS D on C.user_id=D.id) AS E left join (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title FROM rules) AS F on E.rule_id=F.id ORDER BY F.chapter_id, F.rule_number;") or error($PN.'17', $con);
 	
-	$result_tmp_count = mysql_query("SELECT COUNT(*) FROM results_tmp;") or error($PN.'22');
-	$row_tmp_count = mysql_fetch_array($result_tmp_count);
+	$result_tmp_count = mysqli_query($con, "SELECT COUNT(*) FROM results_tmp;") or error($PN.'22', $con);
+	$row_tmp_count = mysqli_fetch_array($result_tmp_count);
 	if($row_tmp_count[0] == 0)
-		error($PN.'23');
+		error($PN.'23', $con);
 	
 	$pdf->SetFont('dejavusans', '', 12);
 	
-	$result_chapter = mysql_query("SELECT id, chapter_name FROM chapters;") or error($PN.'18');
-	while($row_chapter = mysql_fetch_array($result_chapter))
+	$result_chapter = mysqli_query($con, "SELECT id, chapter_name FROM chapters;") or error($PN.'18', $con);
+	while($row_chapter = mysqli_fetch_array($result_chapter))
 	{
 		$pdf->SetFont('dejavusans', 'BI', 12);
 		$chapter_id = $row_chapter[0];
 		$chapter_name = $row_chapter[1];
-		$result_count = mysql_query("SELECT COUNT(*) FROM results_tmp where chapter_id=".$chapter_id.";") or error($PN.'19');
-		$row_count = mysql_fetch_array($result_count);
+		$result_count = mysqli_query($con, "SELECT COUNT(*) FROM results_tmp where chapter_id=".$chapter_id.";") or error($PN.'19', $con);
+		$row_count = mysqli_fetch_array($result_count);
 		if($row_count[0] > 0)
 		{
 			$pdf->AddPage();
@@ -221,8 +221,8 @@
     </tr>';
 			$td_class = "odd";
 			$image = "";
-			$result = mysql_query("SELECT * FROM results_tmp where chapter_id=".$chapter_id.";") or error($PN.'20');
-			while($row = mysql_fetch_array($result))
+			$result = mysqli_query($con, "SELECT * FROM results_tmp where chapter_id=".$chapter_id.";") or error($PN.'20', $con);
+			while($row = mysqli_fetch_array($result))
 			{				
 				if($row['PassOrFail'] == 1)
 					$image = 'images/pass.png';
@@ -250,7 +250,7 @@
 		}
 	}
 	
-	mysql_query("DROP TABLE results_tmp;") or error($PN.'21');
+	mysqli_query($con, "DROP TABLE results_tmp;") or error($PN.'21', $con);
 
 	// add a new page for TOC
 	$pdf->addTOCPage();
@@ -267,7 +267,7 @@
 	// end of TOC page
 	$pdf->endTOCPage();
 
-	@mysql_close();
+	@mysqli_close($con) ;
 	
 	//Close and output PDF document
 	$pdf->Output(ASSESSMENT_NAME.'_Results.pdf', 'I');

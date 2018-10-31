@@ -22,7 +22,7 @@
 	include "settings.php";
 	include "function.php";
 	if(!isset($_SESSION['user']))
-		error($PN.'10');
+		error($PN.'10', $con);
 	
 	header('Content-Type: text/html; charset=utf-8');
   
@@ -32,31 +32,31 @@
 	$rows = array();
   
 	if(!isset($_GET['type']) || !isset($_GET['id']))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	$id = (int)$_GET['id'];
 
 	$type = (int)$_GET['type'];
 	
-	$result = mysql_query("SELECT user_id FROM assignment WHERE id = ".$id.";") or error($PN.'16');
-	$array = mysql_fetch_array($result);
+	$result = mysqli_query($con, "SELECT user_id FROM assignment WHERE id = ".$id.";") or error($PN.'16', $con);
+	$array = mysqli_fetch_array($result);
 
 	if($array['user_id']!=$_SESSION['id'])
-		error($PN.'17');
+		error($PN.'17', $con);
 
 	if($type == 0)
-		$result = mysql_query("SELECT id, chapter_name FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$id.");") or error($PN.'12');
+		$result = mysqli_query($con, "SELECT id, chapter_name FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$id.");") or error($PN.'12', $con);
 	else
-		$result = mysql_query("SELECT id, chapter_name FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$id." AND status=".$type.");") or error($PN.'13');
+		$result = mysqli_query($con, "SELECT id, chapter_name FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$id." AND status=".$type.");") or error($PN.'13', $con);
     
-	while ($row = mysql_fetch_array($result))
+	while ($row = mysqli_fetch_array($result))
 	{
 
-		$result_count1 = mysql_query("SELECT COUNT(*) FROM rules WHERE chapter_id = ".$row['id'].";") or error($PN.'14');
-		$result_count2 = mysql_query("SELECT COUNT(*) FROM assessment_rules WHERE assignment_id=".$id." AND rule_id IN (SELECT id FROM rules WHERE chapter_id = ".$row['id'].");") or error($PN.'15');
+		$result_count1 = mysqli_query($con, "SELECT COUNT(*) FROM rules WHERE chapter_id = ".$row['id'].";") or error($PN.'14', $con);
+		$result_count2 = mysqli_query($con, "SELECT COUNT(*) FROM assessment_rules WHERE assignment_id=".$id." AND rule_id IN (SELECT id FROM rules WHERE chapter_id = ".$row['id'].");") or error($PN.'15', $con);
 
-		$array_count1 = mysql_fetch_array($result_count1);		
-		$array_count2 = mysql_fetch_array($result_count2);
+		$array_count1 = mysqli_fetch_array($result_count1);
+		$array_count2 = mysqli_fetch_array($result_count2);
 
 		if($array_count1[0] != 0)
 		{
@@ -76,6 +76,6 @@
 
 	echo json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 
 ?>

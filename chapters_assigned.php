@@ -22,14 +22,14 @@
 	include "settings.php";
 	include "function.php";
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 
 	header('Content-Type: text/html; charset=utf-8');
 	
 	include 'db.php';
 
 	if(!isset($_GET['users_id']) || !isset($_GET['assessment_id']))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	$assessment_id = (int) $_GET['assessment_id'];
 
@@ -49,26 +49,26 @@
 
 	if($users_id==0)
 	{
-		$result = mysql_query("SELECT id, chapter_name FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id.")) ORDER BY id") or error($PN.'12');
+		$result = mysqli_query($con, "SELECT id, chapter_name FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id.")) ORDER BY id") or error($PN.'12', $con);
 	}
 	else
-		$result = mysql_query("SELECT id, chapter_name FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." and user_id IN (".$users_id."))) ORDER BY id") or error($PN.'13');
+		$result = mysqli_query($con, "SELECT id, chapter_name FROM chapters WHERE id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id = ".$assessment_id." and user_id IN (".$users_id."))) ORDER BY id") or error($PN.'13', $con);
   
-	while ($row = mysql_fetch_array($result))
+	while ($row = mysqli_fetch_array($result))
 	{
 		if($users_id==0)
 		{
-			$result_count1 = mysql_query("SELECT COUNT(*) FROM (SELECT id, chapter_id, assignment_id FROM assignment_chapter WHERE chapter_id=".$row['id']." AND assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.")) AS A LEFT JOIN (SELECT id, chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id;") or error($PN.'14');
-			$result_count2 = mysql_query("SELECT COUNT(*) FROM assessment_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.") AND rule_id IN (SELECT id FROM rules WHERE chapter_id=".$row['id'].");") or error($PN.'15');
+			$result_count1 = mysqli_query($con, "SELECT COUNT(*) FROM (SELECT id, chapter_id, assignment_id FROM assignment_chapter WHERE chapter_id=".$row['id']." AND assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.")) AS A LEFT JOIN (SELECT id, chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id;") or error($PN.'14', $con);
+			$result_count2 = mysqli_query($con, "SELECT COUNT(*) FROM assessment_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id.") AND rule_id IN (SELECT id FROM rules WHERE chapter_id=".$row['id'].");") or error($PN.'15', $con);
 		}
 		else
 		{
-			$result_count1 = mysql_query("SELECT COUNT(*) FROM (SELECT id, chapter_id, assignment_id FROM assignment_chapter WHERE chapter_id=".$row['id']." AND assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id." AND user_id IN (".$users_id."))) AS A LEFT JOIN (SELECT id, chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id;") or error($PN.'16');
-			$result_count2 = mysql_query("SELECT COUNT(*) FROM assessment_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id." AND user_id IN (".$users_id.")) AND rule_id IN (SELECT id FROM rules WHERE chapter_id=".$row['id'].");") or error($PN.'17');
+			$result_count1 = mysqli_query($con, "SELECT COUNT(*) FROM (SELECT id, chapter_id, assignment_id FROM assignment_chapter WHERE chapter_id=".$row['id']." AND assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id." AND user_id IN (".$users_id."))) AS A LEFT JOIN (SELECT id, chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id;") or error($PN.'16', $con);
+			$result_count2 = mysqli_query($con, "SELECT COUNT(*) FROM assessment_rules WHERE assignment_id IN (SELECT id FROM assignment WHERE assessment_id=".$assessment_id." AND user_id IN (".$users_id.")) AND rule_id IN (SELECT id FROM rules WHERE chapter_id=".$row['id'].");") or error($PN.'17', $con);
 		}
 
-		$array_count1 = mysql_fetch_array($result_count1);		
-		$array_count2 = mysql_fetch_array($result_count2);
+		$array_count1 = mysqli_fetch_array($result_count1);
+		$array_count2 = mysqli_fetch_array($result_count2);
 
 		if($array_count1[0] != 0)
 		{
@@ -88,6 +88,6 @@
 
 	echo json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 
 ?>

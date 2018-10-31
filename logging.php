@@ -23,14 +23,14 @@
 
 	include 'function.php';
     if(!isset($_SESSION['admin']))
-      error($PN.'10');
+      error($PN.'10', $con);
 	
     header('Content-Type: text/html; charset=utf-8');
 	
 	include 'db.php';
 	
 	if(!isset($_GET["action"]))
-	  error($PN.'11');
+	  error($PN.'11', $con);
 
 	if($_GET["action"] == "list")
 	{
@@ -49,7 +49,7 @@
 					$sort .= ', ';
 
 				if(!isset($Sorting_array[0]) || !isset($Sorting_array[1]))
-					error($PN.'12');
+					error($PN.'12', $con);
 
 				switch ($Sorting_array[0]) {
 					case "uname":
@@ -68,7 +68,7 @@
 						$sort .= 'action';
 						break;
 					default:
-						error($PN.'13');
+						error($PN.'13', $con);
 				}
 					
 				if($Sorting_array[1] == 'ASC')
@@ -84,7 +84,7 @@
 			$PageSize = (int)$_GET['jtPageSize'];
 		}
 		else
-			error($PN.'14');
+			error($PN.'14', $con);
 			
 	    if(isset($_GET["user_id"]))
 		  $user_id = (int)$_GET['user_id'];
@@ -95,13 +95,13 @@
 
 		if($user_id == 0)
 		{
-			$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM logging;") or error($PN.'15');
-			$row = mysql_fetch_array($result);
+			$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM logging;") or error($PN.'15', $con);
+			$row = mysqli_fetch_array($result);
 			$recordCount = $row['RecordCount'];
 
-			$result = mysql_query("SELECT C.id, C.uname, C.ip, C.data, C.time, D.action FROM (SELECT A.id, B.uname, A.ip, A.data, A.time, A.action FROM (SELECT id, user_id, ip, data, time, action FROM logging) AS A LEFT JOIN (SELECT id, uname FROM users) AS B ON A.user_id = B.id) AS C LEFT JOIN (SELECT id, action FROM logging_action) AS D ON C.action = D.id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'16');
+			$result = mysqli_query($con, "SELECT C.id, C.uname, C.ip, C.data, C.time, D.action FROM (SELECT A.id, B.uname, A.ip, A.data, A.time, A.action FROM (SELECT id, user_id, ip, data, time, action FROM logging) AS A LEFT JOIN (SELECT id, uname FROM users) AS B ON A.user_id = B.id) AS C LEFT JOIN (SELECT id, action FROM logging_action) AS D ON C.action = D.id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'16', $con);
 
-			while($row = mysql_fetch_array($result))
+			while($row = mysqli_fetch_array($result))
 			{
 				if($row['uname'] == '')
 					$row['uname'] = 'anonymous';
@@ -111,13 +111,13 @@
 		}
 		else
 		{
-			$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM logging WHERE user_id = ".$user_id.";") or error($PN.'23');
-			$row = mysql_fetch_array($result);
+			$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM logging WHERE user_id = ".$user_id.";") or error($PN.'23', $con);
+			$row = mysqli_fetch_array($result);
 			$recordCount = $row['RecordCount'];
 
-			$result = mysql_query("SELECT C.id, C.uname, C.ip, C.data, C.time, D.action FROM (SELECT A.id, B.uname, A.ip, A.data, A.time, A.action FROM (SELECT id, user_id, ip, data, time, action FROM logging WHERE user_id = ".$user_id.") AS A LEFT JOIN (SELECT id, uname FROM users WHERE id = ".$user_id.") AS B ON A.user_id = B.id) AS C LEFT JOIN (SELECT id, action FROM logging_action) AS D ON C.action = D.id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'17');
+			$result = mysqli_query($con, "SELECT C.id, C.uname, C.ip, C.data, C.time, D.action FROM (SELECT A.id, B.uname, A.ip, A.data, A.time, A.action FROM (SELECT id, user_id, ip, data, time, action FROM logging WHERE user_id = ".$user_id.") AS A LEFT JOIN (SELECT id, uname FROM users WHERE id = ".$user_id.") AS B ON A.user_id = B.id) AS C LEFT JOIN (SELECT id, action FROM logging_action) AS D ON C.action = D.id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'17', $con);
 
-			while($row = mysql_fetch_array($result))
+			while($row = mysqli_fetch_array($result))
 			{
 				$rows[] = $row;
 			}		
@@ -133,27 +133,27 @@
 	{
 	
 		if($_SESSION['id'] != 1)
-			error($PN.'22');
+			error($PN.'22', $con);
 
 		if($_GET["action"] != "list")
 			if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-				error($PN.'18');
+				error($PN.'18', $con);
 
 		if(isset($_POST['id']))
 		{
 			$id = (int)$_POST['id'];
 		}
 		else
-			error($PN.'19');
+			error($PN.'19', $con);
 
-		mysql_query("DELETE FROM logging WHERE id = ".$id.";") or error($PN.'20');
+		mysqli_query($con, "DELETE FROM logging WHERE id = ".$id.";") or error($PN.'20', $con);
 
 		$response = array();
 		$response['Result'] = "OK";
 		print json_encode($response);
 	}
 	else
-		error($PN.'21');
+		error($PN.'21', $con);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>

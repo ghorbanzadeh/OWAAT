@@ -27,11 +27,11 @@
 	if(isset($_SESSION['user']))
 	{
 		if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-			error($PN.'10');
+			error($PN.'10', $con);
 
 		include 'db.php';
-		log_save($_SESSION['id'], 3, '');
-		@mysql_close();
+		log_save($_SESSION['id'], 3, '', $con);
+		@mysqli_close($con) ;
 
 		session_destroy();
 	}

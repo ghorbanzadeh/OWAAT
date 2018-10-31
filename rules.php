@@ -23,7 +23,7 @@
 
 	include 'function.php';
 	if(!isset($_SESSION['user']))
-		error($PN.'10');
+		error($PN.'10', $con);
 
 	header('Content-Type: text/html; charset=utf-8');
 
@@ -36,7 +36,7 @@
 		$type = (int) $_GET['type'];		
 	}
 	else
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	if(isset($_GET["jtSorting"]) && isset($_GET["jtStartIndex"]) && isset($_GET["jtPageSize"]))
 	{
@@ -52,7 +52,7 @@
 				$sort .= ', ';
 
 			if(!isset($Sorting_array[0]) || !isset($Sorting_array[1]))
-				error($PN.'12');
+				error($PN.'12', $con);
 
 			switch ($Sorting_array[0]) {
 				case "chapter_id":
@@ -77,7 +77,7 @@
 					$sort .= 'B.comment';
 					break;
 				default:
-					error($PN.'13');
+					error($PN.'13', $con);
 			}
 				
 			if($Sorting_array[1] == 'ASC')
@@ -93,32 +93,32 @@
 		$PageSize = (int)$_GET['jtPageSize'];
 	}
 	else
-		error($PN.'14');
+		error($PN.'14', $con);
 
 	if($chapter_id == 0)
 	{
 		if($type == 0)
 		{
-			$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM (SELECT rules.id FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'15');
-			$result2 = mysql_query("SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'16');
+			$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM (SELECT rules.id FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'15', $con);
+			$result2 = mysqli_query($con, "SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'16', $con);
 		}
 		else
 		{
-			$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM (SELECT rules.id FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id." AND status=".$type.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'17');
-			$result2 = mysql_query("SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id." AND status=".$type.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'18');
+			$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM (SELECT rules.id FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id." AND status=".$type.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'17', $con);
+			$result2 = mysqli_query($con, "SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id." AND status=".$type.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'18', $con);
 		}
 	}
 	else
 	{
-		$result = mysql_query("SELECT COUNT(*) AS RecordCount FROM (SELECT rules.id FROM rules where rules.chapter_id=".$chapter_id." order by rules.id) AS A left join (SELECT assessment_rules.rule_id FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'19');
-	    $result2 = mysql_query("SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where chapter_id=".$chapter_id." order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'20');
+		$result = mysqli_query($con, "SELECT COUNT(*) AS RecordCount FROM (SELECT rules.id FROM rules where rules.chapter_id=".$chapter_id." order by rules.id) AS A left join (SELECT assessment_rules.rule_id FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'19', $con);
+	    $result2 = mysqli_query($con, "SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where chapter_id=".$chapter_id." order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id ORDER BY ".$Sorting." LIMIT ".$StartIndex.",".$PageSize.";") or error($PN.'20', $con);
 	}
 	
-	$row = mysql_fetch_array($result);
+	$row = mysqli_fetch_array($result);
 	$recordCount = $row['RecordCount'];
 
 	$rows = array();
-	while($row = mysql_fetch_array($result2))
+	while($row = mysqli_fetch_array($result2))
 	{
 		$rows[] = $row;
 	}		
@@ -129,5 +129,5 @@
 	$response['Records'] = $rows;
 	print json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>

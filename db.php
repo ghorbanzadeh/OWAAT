@@ -6,7 +6,6 @@ $pass = '';
 
 $databaseName = 'asvs2014';
 
-$con = mysql_connect($host,$user,$pass);
-$dbs = mysql_select_db($databaseName, $con) or error($PN.'10');
+$con = mysqli_connect($host,$user,$pass,$databaseName) or error($PN.'10');
 
 ?>

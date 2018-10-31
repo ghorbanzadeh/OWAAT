@@ -22,7 +22,7 @@
 	include "settings.php";
 	include "function.php";
 	if(!isset($_SESSION['user']))
-		error($PN.'10');
+		error($PN.'10', $con);
 	
 	header('Content-Type: text/html; charset=utf-8');
   
@@ -39,35 +39,35 @@
 
 		$type = (int) $_GET['type'];
 
-		$result = mysql_query("SELECT user_id FROM assignment WHERE id = ".$assignment_id.";") or error($PN.'15');
-		$array = mysql_fetch_array($result);
+		$result = mysqli_query($con, "SELECT user_id FROM assignment WHERE id = ".$assignment_id.";") or error($PN.'15', $con);
+		$array = mysqli_fetch_array($result);
 
 		if($array['user_id']!=$_SESSION['id'])
-			error($PN.'16');
+			error($PN.'16', $con);
 
 		if($chapter_id == 0)
 		{
 			if($type == 0)
-				$result = mysql_query("SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'11');
+				$result = mysqli_query($con, "SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'11', $con);
 			else
-				$result = mysql_query("SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id." AND status=".$type.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'12');
+				$result = mysqli_query($con, "SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where rules.chapter_id IN (SELECT chapter_id FROM assignment_chapter WHERE assignment_id =".$assignment_id." AND status=".$type.") order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'12', $con);
 		}
 		else
-			$result = mysql_query("SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where chapter_id=".$chapter_id." order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'13');
+			$result = mysqli_query($con, "SELECT A.id, A.chapter_id, A.rule_number, A.title, A.level, A.methodology, B.PassOrFail, B.comment FROM (SELECT rules.id, rules.chapter_id, rules.rule_number, rules.title, rules.level, rules.methodology FROM rules where chapter_id=".$chapter_id." order by rules.id) AS A left join (SELECT assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment FROM assessment_rules where assessment_rules.assignment_id=".$assignment_id.") AS B on A.id=B.rule_id;") or error($PN.'13', $con);
 
-		while ($row = mysql_fetch_array($result))
+		while ($row = mysqli_fetch_array($result))
 		{
 		  $rows[] = $row;
 		}
 	}
 	else
-		error($PN.'14');
+		error($PN.'14', $con);
 
 	$response['Result'] = 'OK';
 	$response['Records'] = $rows;
 
 	echo json_encode($response);
 	
-	@mysql_close();
+	@mysqli_close($con) ;
   
 ?>

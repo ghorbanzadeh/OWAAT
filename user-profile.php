@@ -23,14 +23,14 @@
 
 	include 'function.php';
     if(!isset($_SESSION['user']))
-      error($PN.'10');
+      error($PN.'10', $con);
 	
     header('Content-Type: text/html; charset=utf-8');
 	
 	include 'db.php';
 	
 	if(!isset($_GET["action"]))
-	  error($PN.'11');
+	  error($PN.'11', $con);
 	
 	if($_GET["action"] == "update")
 	{
@@ -39,38 +39,38 @@
 			if(isset($_POST["fname"]) && isset($_POST["lname"]) && isset($_POST["email"]))
 			{
 				$fname_tmp = strip_tags($_POST['fname']);
-				$fname = mysql_real_escape_string($fname_tmp);
+				$fname = mysqli_real_escape_string($con, $fname_tmp);
 				$fname = trim($fname);
 
 				$lname_tmp = strip_tags($_POST['lname']);
-				$lname = mysql_real_escape_string($lname_tmp);
+				$lname = mysqli_real_escape_string($con, $lname_tmp);
 				$lname = trim($lname);
 
 				$email_tmp = strip_tags($_POST['email']);
-				$email = mysql_real_escape_string($email_tmp);
+				$email = mysqli_real_escape_string($con, $email_tmp);
 				$email = trim($email);
 
 				if(empty($fname) || empty($lname) || empty($email))
-					error($PN.'12');
+					error($PN.'12', $con);
 				  
 				if (!preg_match("/([\w\-]+\@[\w\-]+\.[\w\-]+)/", $email))
-					error($PN.'13');
+					error($PN.'13', $con);
 
 			}
 			else
-				error($PN.'14');
+				error($PN.'14', $con);
 		}
 		else
 		{
 			$password_tmp = strip_tags($_POST['password']);
-			$password = mysql_real_escape_string($password_tmp);
+			$password = mysqli_real_escape_string($con, $password_tmp);
 			$password = trim($password);
 
 			if(strlen($password) < 6)
-				error($PN.'15');
+				error($PN.'15', $con);
 			
 			if($password != @$_POST['password2'])
-				error($PN.'16');
+				error($PN.'16', $con);
 		}
 	}
 	
@@ -78,13 +78,13 @@
 	{
 		$recordCount = 1;
 
-		$result = mysql_query("SELECT id, fname, lname, email, uname, administrator, enabled FROM users WHERE id='".$_SESSION['id']."';") or error($PN.'17');
+		$result = mysqli_query($con, "SELECT id, fname, lname, email, uname, administrator, enabled FROM users WHERE id='".$_SESSION['id']."';") or error($PN.'17', $con);
 
 		$rows = array();
-		$row = mysql_fetch_array($result);
+		$row = mysqli_fetch_array($result);
 			
 		if(!$row){
-			error($PN.'18');
+			error($PN.'18', $con);
 		}
 			
 		$rows[] = $row;
@@ -100,15 +100,15 @@
 		$id = $_SESSION['id'];
 
 		if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-			error($PN.'19');
+			error($PN.'19', $con);
 
 		if(empty($password))
-			mysql_query("UPDATE users SET fname='".$fname."', lname='".$lname."', email='".$email."' WHERE id = ".$id.";") or error($PN.'20');
+			mysqli_query($con, "UPDATE users SET fname='".$fname."', lname='".$lname."', email='".$email."' WHERE id = ".$id.";") or error($PN.'20', $con);
 		else
-			mysql_query("UPDATE users SET password='".sha1($password)."' WHERE id = ".$id.";") or error($PN.'21');
+			mysqli_query($con, "UPDATE users SET password='".sha1($password)."' WHERE id = ".$id.";") or error($PN.'21', $con);
 
-		$result = mysql_query("SELECT id, fname, lname, email, uname, administrator, enabled FROM users WHERE id = ".$id.";") or error($PN.'22');
-		$row = mysql_fetch_array($result);
+		$result = mysqli_query($con, "SELECT id, fname, lname, email, uname, administrator, enabled FROM users WHERE id = ".$id.";") or error($PN.'22', $con);
+		$row = mysqli_fetch_array($result);
 
 		$response = array();
 		$response['Result'] = "OK";
@@ -116,7 +116,7 @@
 		print json_encode($response);
 	}
 	else
-		error($PN.'23');
+		error($PN.'23', $con);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>

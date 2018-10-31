@@ -22,7 +22,7 @@
 	include "settings.php";
 	include "function.php";
 	if(!isset($_SESSION['user']))
-		error($PN.'10');
+		error($PN.'10', $con);
 	
 	header('Content-Type: text/html; charset=utf-8');
   
@@ -32,23 +32,23 @@
 	$rows = array();
 
 	if(!isset($_GET['type']))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	$type = (int)$_GET['type'];
 
 	if($type == 0)
-		$result = mysql_query("SELECT A.id, A.assessment_id, B.assessment_name FROM (SELECT id, assessment_id FROM assignment WHERE user_id = ".$_SESSION['id'].") AS A left join (SELECT id, assessment_name FROM assessment) AS B on A.assessment_id=B.id ORDER BY B.assessment_name") or error($PN.'12');
+		$result = mysqli_query($con, "SELECT A.id, A.assessment_id, B.assessment_name FROM (SELECT id, assessment_id FROM assignment WHERE user_id = ".$_SESSION['id'].") AS A left join (SELECT id, assessment_name FROM assessment) AS B on A.assessment_id=B.id ORDER BY B.assessment_name") or error($PN.'12', $con);
 	else
-		$result = mysql_query("SELECT A.id, A.assessment_id, B.assessment_name FROM (SELECT id, assessment_id FROM assignment WHERE user_id = ".$_SESSION['id']." AND id IN (SELECT assignment_id FROM assignment_chapter WHERE status=".$type.")) AS A left join (SELECT id, assessment_name FROM assessment) AS B on A.assessment_id=B.id ORDER BY B.assessment_name") or error($PN.'13');
+		$result = mysqli_query($con, "SELECT A.id, A.assessment_id, B.assessment_name FROM (SELECT id, assessment_id FROM assignment WHERE user_id = ".$_SESSION['id']." AND id IN (SELECT assignment_id FROM assignment_chapter WHERE status=".$type.")) AS A left join (SELECT id, assessment_name FROM assessment) AS B on A.assessment_id=B.id ORDER BY B.assessment_name") or error($PN.'13', $con);
 
-    while ($row = mysql_fetch_array($result))
+    while ($row = mysqli_fetch_array($result))
     {
 		$assessment_id = $row['assessment_id'];
-		$result_count1 = mysql_query("SELECT COUNT(B.chapter_id) FROM (SELECT id, chapter_id, assignment_id FROM assignment_chapter WHERE assignment_id = (SELECT id FROM assignment WHERE assessment_id=".$assessment_id." AND user_id=".$_SESSION['id'].")) AS A LEFT JOIN (SELECT id, chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id;") or error($PN.'14');
-		$array_count1 = mysql_fetch_array($result_count1);
+		$result_count1 = mysqli_query($con, "SELECT COUNT(B.chapter_id) FROM (SELECT id, chapter_id, assignment_id FROM assignment_chapter WHERE assignment_id = (SELECT id FROM assignment WHERE assessment_id=".$assessment_id." AND user_id=".$_SESSION['id'].")) AS A LEFT JOIN (SELECT id, chapter_id FROM rules) AS B ON A.chapter_id = B.chapter_id;") or error($PN.'14', $con);
+		$array_count1 = mysqli_fetch_array($result_count1);
 
-		$result_count2 = mysql_query("SELECT COUNT(*) FROM assessment_rules WHERE assignment_id = (SELECT id FROM assignment WHERE assessment_id=".$assessment_id." AND user_id=".$_SESSION['id'].");") or error($PN.'15');
-		$array_count2 = mysql_fetch_array($result_count2);
+		$result_count2 = mysqli_query($con, "SELECT COUNT(*) FROM assessment_rules WHERE assignment_id = (SELECT id FROM assignment WHERE assessment_id=".$assessment_id." AND user_id=".$_SESSION['id'].");") or error($PN.'15', $con);
+		$array_count2 = mysqli_fetch_array($result_count2);
 
 		if($array_count1[0] != 0)
 		{
@@ -66,14 +66,14 @@
 	$response['Result'] = 'OK';
 	$response['Records'] = $rows;
 
-	$result_new_assignment = mysql_query("SELECT id FROM assignment WHERE user_id = ".$_SESSION['id']." AND id IN (SELECT assignment_id FROM assignment_chapter WHERE status=1)") or error($PN.'16');
-	if(mysql_fetch_array($result_new_assignment))
+	$result_new_assignment = mysqli_query($con, "SELECT id FROM assignment WHERE user_id = ".$_SESSION['id']." AND id IN (SELECT assignment_id FROM assignment_chapter WHERE status=1)") or error($PN.'16', $con);
+	if(mysqli_fetch_array($result_new_assignment))
 		$response['new_assignment'] = 'Yes';
 	else
 		$response['new_assignment'] = 'No';
 
 	echo json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 
 ?>

@@ -22,14 +22,14 @@
 	include "settings.php";
 	include "function.php";
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 
 	header('Content-Type: text/html; charset=utf-8');
 	
 	include 'db.php';
 
 	if(!isset($_GET['users_id']) || !isset($_GET['assessment_id']))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	$assessment_id = (int) $_GET['assessment_id'];
 
@@ -48,11 +48,11 @@
 	$rows = array();
 
 	if($users_id==0)
-		$result = mysql_query("SELECT B.id, B.uname FROM (SELECT user_id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_comment != '') AS A LEFT JOIN (SELECT id, uname FROM users) AS B ON A.user_id = B.id ORDER BY B.uname") or error($PN.'12');
+		$result = mysqli_query($con, "SELECT B.id, B.uname FROM (SELECT user_id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_comment != '') AS A LEFT JOIN (SELECT id, uname FROM users) AS B ON A.user_id = B.id ORDER BY B.uname") or error($PN.'12', $con);
 	else
-		$result = mysql_query("SELECT B.id, B.uname FROM (SELECT user_id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (".$users_id.") AND user_comment != '') AS A LEFT JOIN (SELECT id, uname FROM users) AS B ON A.user_id = B.id ORDER BY B.uname") or error($PN.'13');
+		$result = mysqli_query($con, "SELECT B.id, B.uname FROM (SELECT user_id FROM assignment WHERE assessment_id = ".$assessment_id." AND user_id IN (".$users_id.") AND user_comment != '') AS A LEFT JOIN (SELECT id, uname FROM users) AS B ON A.user_id = B.id ORDER BY B.uname") or error($PN.'13', $con);
   
-	while ($row = mysql_fetch_array($result))
+	while ($row = mysqli_fetch_array($result))
 	{
 		$rows[] = $row;
 	}   
@@ -62,6 +62,6 @@
 
 	echo json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 
 ?>

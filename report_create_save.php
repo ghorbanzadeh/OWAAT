@@ -23,14 +23,14 @@
 	include 'function.php';
 
 	if(!isset($_SESSION['admin']))
-		error($PN.'10');
+		error($PN.'10', $con);
 	
 	header('Content-Type: text/html; charset=utf-8');
 	
 	include 'db.php';
 
 	if(!isset($_GET['token']) || validate_token($_GET['token']) == false)
-			error($PN.'11');
+			error($PN.'11', $con);
 
 	$assessment_rules_id_unchecked = '';
 		
@@ -47,9 +47,9 @@
 		}
 	}
 	else
-		error($PN.'12');
+		error($PN.'12', $con);
 
-	mysql_query("DELETE FROM report_rules WHERE id IN (".$assessment_rules_id_unchecked.");") or error($PN.'13');
+	mysqli_query($con, "DELETE FROM report_rules WHERE id IN (".$assessment_rules_id_unchecked.");") or error($PN.'13', $con);
 
 
 	if(isset($_GET['assessment_rules_id']))
@@ -61,26 +61,26 @@
 			$AssessmentRulesID = trim($AssessmentRulesID);
 			$assessment_rules_id = (int)$AssessmentRulesID;
 			
-			$result = mysql_query("SELECT assignment_id, rule_id FROM assessment_rules WHERE id = ".$assessment_rules_id.";") or error($PN.'14');
-			$row = mysql_fetch_array($result);
+			$result = mysqli_query($con, "SELECT assignment_id, rule_id FROM assessment_rules WHERE id = ".$assessment_rules_id.";") or error($PN.'14', $con);
+			$row = mysqli_fetch_array($result);
 
 			if($row)
 			{
-				$result_report = mysql_query("SELECT id FROM report_rules WHERE assignment_id = ".$row['assignment_id']." AND rule_id = ".$row['rule_id'].";") or error($PN.'15');
-				$row_report = mysql_fetch_array($result_report);
+				$result_report = mysqli_query($con, "SELECT id FROM report_rules WHERE assignment_id = ".$row['assignment_id']." AND rule_id = ".$row['rule_id'].";") or error($PN.'15', $con);
+				$row_report = mysqli_fetch_array($result_report);
 			
 				if(!$row_report)
-					mysql_query("INSERT INTO report_rules (assignment_id, rule_id, PassOrFail, comment, last_modified) SELECT assessment_rules.assignment_id, assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment, assessment_rules.last_modified FROM assessment_rules WHERE assessment_rules.id = ".$assessment_rules_id.";") or error($PN.'16');
+					mysqli_query($con, "INSERT INTO report_rules (assignment_id, rule_id, PassOrFail, comment, last_modified) SELECT assessment_rules.assignment_id, assessment_rules.rule_id, assessment_rules.PassOrFail, assessment_rules.comment, assessment_rules.last_modified FROM assessment_rules WHERE assessment_rules.id = ".$assessment_rules_id.";") or error($PN.'16', $con);
 			}
 		}
 	}
 	else
-		error($PN.'17');
+		error($PN.'17', $con);
 
 	$response = array();
 	
 	$response['Result'] = "OK";
 	print json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 ?>

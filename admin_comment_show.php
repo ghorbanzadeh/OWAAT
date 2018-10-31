@@ -23,34 +23,34 @@
 	include 'function.php';
 
 	if(!isset($_SESSION['user']))
-		error($PN.'10');
+		error($PN.'10', $con);
 	
 	header('Content-Type: text/html; charset=utf-8');
   
 	include 'db.php';
 
   	if(!isset($_GET['assignment_id']))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	$assignment_id = (int) $_GET['assignment_id'];
 	$user_id = $_SESSION['id'];
 
-	$result = mysql_query("SELECT user_id FROM assignment WHERE id = ".$assignment_id.";") or error($PN.'12');
-	$array = mysql_fetch_array($result);
+	$result = mysqli_query($con, "SELECT user_id FROM assignment WHERE id = ".$assignment_id.";") or error($PN.'12', $con);
+	$array = mysqli_fetch_array($result);
 
 	if($array['user_id']!=$user_id)
-		error($PN.'13');
+		error($PN.'13', $con);
 
 	$response = array();
 
-	$result = mysql_query("SELECT id, admin_comment FROM assignment WHERE id = ".$assignment_id.";") or error($PN.'14');
-	$row = mysql_fetch_array($result);
+	$result = mysqli_query($con, "SELECT id, admin_comment FROM assignment WHERE id = ".$assignment_id.";") or error($PN.'14', $con);
+	$row = mysqli_fetch_array($result);
 
 	$response['Result'] = 'OK';
 	$response['Record'] = $row;
 
 	echo json_encode($response);
 
-	@mysql_close();
+	@mysqli_close($con) ;
 
 ?>

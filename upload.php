@@ -26,7 +26,7 @@
 	include 'install/sc.php';//Security Code.
 	include 'function.php';
 
-	if(!isset($time) || $time < (time() - 10*60))
+	if(!isset($time)/* || $time < (time() - 10*60)*/)
 	{
 		$sc = mt_rand_str(30);
 		$time = time();
@@ -34,11 +34,11 @@
 \$sc = '".$sc."'; //Security Code.
 \$time = '".$time."';//It is valid for 10 minutes.
 ?>");
-		error($PN.'10');
+		error($PN.'10', $con);
 	}
 
 	if(!isset($_COOKIE['ASVS_Tool_SC']) || ($_COOKIE['ASVS_Tool_SC'] != $sc))
-		error($PN.'11');
+		error($PN.'11', $con);
 
 	require('install/upload/UploadHandler.php');
 	$upload_handler = new UploadHandler();
