@@ -58,7 +58,7 @@
 		if(!$con)
 			error($PN.'23');
 
-		mysql_query("CREATE DATABASE ".$databaseName);
+		mysql_query("CREATE DATABASE IF NOT EXISTS ".$databaseName);
 
 		@mysql_close($con);	
 
