@@ -1,10 +1,10 @@
 <?php
 
-$host = 'localhost';
-$user = 'root';
-$pass = '';
+$host = 'db';
+$user = 'devuser';
+$pass = 'devpass';
 
-$databaseName = 'asvs2014';
+$databaseName = 'devdb';
 
 $con = mysql_connect($host,$user,$pass);
 $dbs = mysql_select_db($databaseName, $con) or error($PN.'10');

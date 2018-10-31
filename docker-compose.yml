@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: superSecretAndRandomPassw1rd
+      MYSQL_DATABASE: devdb
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpass
+    ports:
+    - "3308:3306"
+  backend:
+    image: php:7.2.2-apache
+    build: ./
+    depends_on:
+    - db
+    volumes:
+    - .:/var/www/html/
+    ports:
+    - "8100:80"
+    environment:
+      XDEBUG_CONFIG: remote_host=192.168.24.41
+    stdin_open: true
+    tty: true
