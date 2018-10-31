@@ -28,7 +28,9 @@ I. Description
 
 II. Installation
 
-	Please follow installation wizard:
+    Before you can start the setup, please change the setup password and current time in install/sc.php
+
+	After that you can follow the installation wizard at:
 	http://YourWebSite/asvs/install/
 
 
